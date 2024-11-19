@@ -1,11 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useSelector } from "react-redux";
+import genData from "@/utils/Generatedata";
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 export default function Component() {
+  const globalData = useSelector((data:any) => data);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -55,6 +58,14 @@ export default function Component() {
       setIsLoading(false);
     }
   }
+
+  const generateAIModel=()=>{
+    console.log(globalData.projects.prompt)
+    let API= process.env.NEXT_PUBLIC_GEM_API;
+    console.log(API)
+    genData(globalData.projects.prompt,API )
+
+  }
   return (
     <div className="flex flex-col h-screen bg-[#1E1E1E]">
       <header className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
@@ -71,7 +82,7 @@ export default function Component() {
           <h1 className="text-white text-xl font-semibold">Catmod</h1>
           <h1 className=" text-orange-700 text-xl font-semibold">AI</h1>
         </div>
-        <button className="px-4 py-2 bg-[#FF5722] text-white rounded-lg flex items-center space-x-2">
+        <button onClick={generateAIModel} className="px-4 py-2 bg-[#FF5722] text-white rounded-lg flex items-center space-x-2">
           <span>✨</span>
           <span>Pur-duce</span>
         </button>
