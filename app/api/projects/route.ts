@@ -1,5 +1,5 @@
 import Project from '@/models/project'
-import connectMangoDB from '@/utils/dbConfig'
+import connectMangoDB from '@/lib/mongodb'
 
 export const GET = async() =>{
  await  connectMangoDB()
