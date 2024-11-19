@@ -7,7 +7,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import type {RootState} from '@/store/store';
 import { addProject } from '@/store/projectSlice';
 import { useRouter } from 'next/navigation';
-
+import Image from "next/image"
+import tailwind from '@/public/images/tailwind.png'
 interface Project {
   _id: string
   name: string
@@ -34,6 +35,10 @@ export default function ProjectsPage() {
   const [projects, setProjects] = React.useState<Project[]>([])
   const [newProjectName, setNewProjectName] = useState('');
   const [selectedTech, setSelectedTech] = useState<string[]>([]);
+  const [deleteConfirmation, setDeleteConfirmation] = React.useState<{open: boolean, projectId: string | null}>({
+    open: false,
+    projectId: null
+  });
   const dispatch = useDispatch();
   const router = useRouter();
   const localProjects = useSelector((state: RootState) => state.projects.localProjects);
@@ -78,6 +83,17 @@ export default function ProjectsPage() {
       dispatch(addProject(newProject));
       setIsCreateModalOpen(false);
       router.push('/chatbot');
+    }
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setDeleteConfirmation({ open: true, projectId: id });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteConfirmation.projectId) {
+      await deleteProject(deleteConfirmation.projectId);
+      setDeleteConfirmation({ open: false, projectId: null });
     }
   };
 
@@ -136,7 +152,7 @@ export default function ProjectsPage() {
                     >
                       {tech === 'HTML' && <Code className="h-3 w-3" />}
                       {tech === 'ReactJS' && <div className="text-[#61DAFB]">⚛</div>}
-                      {tech === 'Tailwind CSS' && <div className="text-[#38BDF8]">🌊</div>}
+                      {tech === 'Tailwind CSS' && <div className="text-[#38BDF8]"><Image src={tailwind} alt="CatMod AI Logo" width={20} height={20} className="rounded-full" /> </div>}
                       {tech}
                     </div>
                   ))}
@@ -153,7 +169,7 @@ export default function ProjectsPage() {
                 <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
                   <Trash2 
                     className="h-4 w-4 text-[#F05D23]" 
-                    onClick={() => deleteProject(project._id)}
+                    onClick={() => handleDeleteClick(project._id)}
                   />
                 </button>
               </div>
@@ -206,6 +222,27 @@ export default function ProjectsPage() {
           >
             Create
           </button>
+        </div>
+      </Dialog>
+
+      <Dialog open={deleteConfirmation.open} onOpenChange={(open) => setDeleteConfirmation({ open, projectId: null })}>
+        <div className="space-y-4">
+          <h2 className="text-center text-white text-2xl font-semibold">Confirm Delete</h2>
+          <p className="text-center text-gray-400">Are you sure you want to delete this project?</p>
+          <div className="flex justify-end gap-4">
+            <button
+              onClick={() => setDeleteConfirmation({ open: false, projectId: null })}
+              className="px-4 py-2 rounded bg-[#2A2A2A] text-gray-400 hover:bg-[#3A3A3A]"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirmDelete}
+              className="px-4 py-2 rounded bg-[#ff3d3d] text-white hover:bg-[#f01515]/90"
+            >
+              Delete
+            </button>
+          </div>
         </div>
       </Dialog>
     </div>

@@ -61,7 +61,7 @@ export default function Component() {
         <div className="flex items-center space-x-2">
           <div className="w-10 h-10 rounded-full overflow-hidden">
             <Image
-              src="/logocat.png"
+              src="/assets/images/logo.png"
               alt="Website Design AI"
               width={40}
               height={40}
@@ -88,7 +88,7 @@ export default function Component() {
               {message.role === "assistant" && (
                 <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                   <Image
-                    src="/logocat.png"
+                    src="/assets/images/logo.png"
                     alt="AI"
                     width={32}
                     height={32}
@@ -108,7 +108,7 @@ export default function Component() {
               {message.role === "user" && (
                 <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                   <Image
-                    src="/images.png"
+                    src="/assets/images/images.png"
                     alt="User"
                     width={32}
                     height={32}

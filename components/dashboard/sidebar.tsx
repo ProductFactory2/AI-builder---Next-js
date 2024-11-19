@@ -10,7 +10,7 @@ export default function Sidebar({ className = "" }: { className?: string }) {
   return (
     <div className={`flex h-screen w-64 flex-col bg-[#1E1E1E] ${className}`}>
       <div className="flex h-[60px] items-center justify-center border-b border-[#2A2A2A] px-6">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2">
           <Image
             src={logo} 
             alt="CatMod AI Logo"
