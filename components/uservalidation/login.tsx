@@ -26,13 +26,23 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       })
 
+      const data = await res.json()
+
       if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.error)
+        if (res.status === 404) {
+          throw new Error('User not found. Please signup.')
+        } else if (res.status === 401) {
+          throw new Error('Incorrect password. Please try again.')
+        }
+        throw new Error(data.error || 'Login failed')
       }
+
+      // Store user data in localStorage or state management
+      localStorage.setItem('user', JSON.stringify(data.user))
 
       router.push('/dashboard')
     } catch (error) {
+      console.error('Login error:', error)
       setError(error instanceof Error ? error.message : 'Login failed')
     }
   }
