@@ -1,159 +1,142 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function Upload() {
-  const [files, setFiles] = useState([]);
-  const [status, setStatus] = useState('');
+export default function ProjectPreview() {
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState('');
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
-  const [projectName, setProjectName] = useState('');
 
-  const handleDirectoryChange = async (e) => {
-    const items = Array.from(e.target.files);
-    
-    // Create a tree structure of the files
-    const fileTree = items.reduce((tree, file) => {
-      const relativePath = file.webkitRelativePath;
-      const pathParts = relativePath.split('/');
-      
-      // First part is the root directory name
-      if (!projectName && pathParts[0]) {
-        setProjectName(pathParts[0]);
+  // Fetch list of available projects
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch('/api/preview');
+        const data = await response.json();
+        
+        if (response.ok) {
+          setProjects(data.projects);
+          // Select the first project by default if available
+          if (data.projects.length > 0) {
+            setSelectedProject(data.projects[0]);
+          }
+        } else {
+          throw new Error(data.error || 'Failed to fetch projects');
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-      
-      return [...tree, {
-        file,
-        path: relativePath,
-        relativePath: pathParts.slice(1).join('/') // Remove root dir from path
-      }];
-    }, []);
+    };
 
-    setFiles(fileTree);
-    setStatus(`Selected ${items.length} files from directory`);
-    setError('');
+    fetchProjects();
+  }, []);
+
+  const handleProjectChange = (projectName) => {
+    setSelectedProject(projectName);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!files.length) {
-      setError('Please select a directory to upload');
-      return;
-    }
-
-    setIsUploading(true);
-    setStatus('Uploading project directory...');
-    setError('');
-
-    try {
-      const formData = new FormData();
-      formData.append('projectName', projectName);
-      
-      // Append files and paths separately
-      files.forEach((fileInfo) => {
-        formData.append('files', fileInfo.file);
-        formData.append('paths', fileInfo.relativePath);
-      });
-
-      console.log('Uploading files:', files.map(f => f.relativePath));
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setStatus(`Successfully uploaded project with ${files.length} files!`);
-        setFiles([]);
-        setProjectName('');
-        // Reset the file input
-        e.target.reset();
-      } else {
-        throw new Error(data.error || 'Upload failed');
-      }
-    } catch (err) {
-      console.error('Upload error:', err);
-      setError(err.message || 'Failed to upload directory');
-      setStatus('');
-    } finally {
-      setIsUploading(false);
+  // Function to refresh iframe content
+  const refreshPreview = () => {
+    const iframe = document.getElementById('preview-iframe');
+    if (iframe) {
+      iframe.src = iframe.src;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-gray-600">Loading projects...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-red-600 p-4 text-center">
+        Error: {error}
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto max-w-md p-6">
-      <h1 className="text-2xl font-bold mb-6 text-center">
-        Upload Project Directory to MongoDB Atlas
-      </h1>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Select Project Directory
-          </label>
-          <input 
-            type="file"
-            onChange={handleDirectoryChange}
-            webkitdirectory="true"
-            directory="true"
-            multiple
-            className="block w-full text-sm border border-gray-300 rounded-lg cursor-pointer 
-              focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <button 
-          type="submit" 
-          disabled={!files.length || isUploading}
-          className={`w-full py-2 rounded-lg text-white font-semibold transition-colors duration-300 
-            ${files.length && !isUploading 
-              ? 'bg-blue-600 hover:bg-blue-700' 
-              : 'bg-gray-400 cursor-not-allowed'
-            }`}
-        >
-          {isUploading ? 'Uploading...' : 'Upload Project'}
-        </button>
-      </form>
-
-      {status && (
-        <div className={`mt-4 p-3 rounded-lg text-center 
-          ${status.includes('Successfully') 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-blue-100 text-blue-800'
-          }`}
-        >
-          {status}
-        </div>
-      )}
-
-      {error && (
-        <div className="mt-4 p-3 bg-red-100 text-red-800 rounded-lg text-center">
-          {error}
-        </div>
-      )}
-
-      {files.length > 0 && (
-        <div className="mt-6 border rounded-lg p-4 bg-gray-50">
-          <h2 className="font-semibold mb-2 text-lg">Selected Files:</h2>
-          <div className="text-sm mb-3 text-gray-600">
-            Project: {projectName}
+    <div className="container mx-auto p-6 max-w-6xl">
+      <div className="mb-6 flex justify-between items-center">
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold">Project Preview</h1>
+          <div className="flex items-center space-x-4">
+            <select
+              value={selectedProject}
+              onChange={(e) => handleProjectChange(e.target.value)}
+              className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {projects.map((project) => (
+                <option key={project} value={project}>
+                  {project}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={refreshPreview}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              title="Refresh Preview"
+            >
+              Refresh
+            </button>
           </div>
-          <ul className="space-y-2 max-h-60 overflow-y-auto">
-            {files.map((fileInfo, index) => (
-              <li 
-                key={index} 
-                className="flex flex-col text-sm bg-white p-2 rounded"
-              >
-                <div className="flex justify-between">
-                  <span className="font-medium">{fileInfo.relativePath}</span>
-                  <span>{(fileInfo.file.size / 1024).toFixed(2)} KB</span>
-                </div>
-              </li>
-            ))}
-          </ul>
         </div>
-      )}
+        
+        {/* Open in new tab button */}
+        <a
+          href={`/api/preview/${selectedProject}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Open in New Tab
+        </a>
+      </div>
+
+      {/* Preview Container */}
+      <div className="relative w-full rounded-lg overflow-hidden shadow-lg bg-white">
+        {/* Responsive iframe container with 16:9 aspect ratio */}
+        <div className="relative w-full pb-[56.25%]">
+          {selectedProject && (
+            <iframe
+              id="preview-iframe"
+              src={`/api/preview/${selectedProject}`}
+              className="absolute top-0 left-0 w-full h-full border-0"
+              allow="accelerometer; camera; encrypted-media; geolocation; gyroscope; microphone; midi"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Device Preview Buttons */}
+      <div className="mt-4 flex justify-center space-x-4">
+        <button
+          onClick={() => {
+            const iframe = document.getElementById('preview-iframe');
+            iframe.parentElement.style.paddingBottom = '56.25%'; // 16:9
+            iframe.style.width = '100%';
+          }}
+          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+        >
+          Desktop
+        </button>
+        <button
+          onClick={() => {
+            const iframe = document.getElementById('preview-iframe');
+            iframe.parentElement.style.paddingBottom = '177.78%'; // 9:16
+            iframe.style.width = '375px';
+          }}
+          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+        >
+          Mobile
+        </button>
+      </div>
     </div>
   );
 }

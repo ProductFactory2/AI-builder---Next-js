@@ -1,9 +1,8 @@
 import mongoose from 'mongoose';
-import { createRouter } from 'next-connect';
 import mime from 'mime-types';
 import path from 'path';
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = 'mongodb+srv://dhanushkihub:Cdrvkg5lIQPe25vl@previewtest.098u6.mongodb.net/?retryWrites=true&w=majority&appName=previewTest';
 
 // Connect to MongoDB
 const connectDB = async () => {
@@ -21,39 +20,21 @@ const connectDB = async () => {
   }
 };
 
-const router = createRouter();
-
-// Get list of projects
-router.get('/api/projects', async (req, res) => {
-  try {
-    await connectDB();
-    const db = mongoose.connection.db;
-    const bucket = new mongoose.mongo.GridFSBucket(db, { bucketName: 'projects' });
-
-    // Get distinct project names from the files collection
-    const files = await bucket.find({}).toArray();
-    const projects = [...new Set(files.map(file => {
-      const pathParts = file.filename.split('/');
-      return pathParts[0]; // First part is the project name
-    }))];
-
-    return res.status(200).json({ projects });
-  } catch (error) {
-    console.error('Error fetching projects:', error);
-    return res.status(500).json({ error: 'Failed to fetch projects' });
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
-});
 
-// Serve project files
-router.get('/api/preview/:projectName/*', async (req, res) => {
   try {
     await connectDB();
     const db = mongoose.connection.db;
     const bucket = new mongoose.mongo.GridFSBucket(db, { bucketName: 'projects' });
 
-    const projectName = req.query.projectName;
-    let filePath = req.query[0] || 'index.html';
-    
+    // Get project name and file path from the URL
+    const { slug } = req.query;
+    const projectName = slug[0];
+    const filePath = slug.slice(1).join('/') || 'index.html';
+
     // Construct the full file path
     const fullPath = `${projectName}/${filePath}`;
     console.log('Requesting file:', fullPath);
@@ -62,8 +43,8 @@ router.get('/api/preview/:projectName/*', async (req, res) => {
     const files = await bucket.find({ filename: fullPath }).toArray();
     
     if (!files.length) {
-      // If the specific file is not found and no path is specified, try to serve index.html
-      if (!req.query[0]) {
+      if (!filePath || filePath === 'index.html') {
+        // Try to find index.html in the project root
         const indexFiles = await bucket.find({ filename: `${projectName}/index.html` }).toArray();
         if (!indexFiles.length) {
           return res.status(404).json({ error: 'Project or file not found' });
@@ -76,9 +57,10 @@ router.get('/api/preview/:projectName/*', async (req, res) => {
 
     const file = files[0];
 
-    // Determine content type
-    const ext = path.extname(file.filename).toLowerCase();
-    const contentType = mime.lookup(ext) || 'application/octet-stream';
+    // Determine content type from metadata or file extension
+    const contentType = file.metadata?.contentType || 
+                       mime.lookup(path.extname(file.filename)) || 
+                       'application/octet-stream';
     
     // Set appropriate headers
     res.setHeader('Content-Type', contentType);
@@ -89,7 +71,6 @@ router.get('/api/preview/:projectName/*', async (req, res) => {
       let htmlContent = '';
       const downloadStream = bucket.openDownloadStream(file._id);
       
-      // Collect chunks of HTML
       for await (const chunk of downloadStream) {
         htmlContent += chunk.toString('utf8');
       }
@@ -98,7 +79,6 @@ router.get('/api/preview/:projectName/*', async (req, res) => {
       htmlContent = htmlContent.replace(
         /(src|href)=("|')(?!http|\/\/|data:)([^"']*)("|')/g,
         (match, attr, quote, path) => {
-          // Don't modify absolute paths
           if (path.startsWith('/')) {
             path = path.substring(1);
           }
@@ -109,7 +89,7 @@ router.get('/api/preview/:projectName/*', async (req, res) => {
       return res.send(htmlContent);
     }
 
-    // Stream the file directly for non-HTML files
+    // Stream non-HTML files directly
     const downloadStream = bucket.openDownloadStream(file._id);
     downloadStream.pipe(res);
 
@@ -117,15 +97,7 @@ router.get('/api/preview/:projectName/*', async (req, res) => {
     console.error('Error serving file:', error);
     return res.status(500).json({ error: 'Failed to serve file' });
   }
-});
-
-// Handle errors
-router.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({
-    error: 'Unexpected server error: ' + err.message
-  });
-});
+}
 
 export const config = {
   api: {
@@ -133,5 +105,3 @@ export const config = {
     responseLimit: false,
   },
 };
-
-export default router.handler();
