@@ -9,6 +9,8 @@ import { addProject } from '@/store/projectSlice';
 import { useRouter } from 'next/navigation';
 import Image from "next/image"
 import tailwind from '@/public/images/tailwind.png'
+import { useSession } from "next-auth/react"
+
 interface Project {
   _id: string
   name: string
@@ -42,38 +44,60 @@ export default function ProjectsPage() {
   const dispatch = useDispatch();
   const router = useRouter();
   const localProjects = useSelector((state: RootState) => state.projects.localProjects);
+  const { data: session } = useSession()
+  const [filterType, setFilterType] = useState<string>('all');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Fetch projects from the server
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, [session]);
 
   // Fetch projects from the server
-  const fetchProjects = async() =>{
-    const response = await fetch('/api/projects');
-      if (!response.ok) throw new Error('Failed to fetch todos');
+  const fetchProjects = async() => {
+    if (!session?.user?.id) return;
+    try {
+      const response = await fetch(`/api/projects?userId=${session.user.id}`);
+      if (!response.ok) throw new Error('Failed to fetch projects');
       const data = await response.json();
-      console.log(data);
       setProjects(data);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
   }
 
   // Delete a project from the server
-  const deleteProject = async(id: string) =>{
-    console.log("Deleting project with ID:", id);
-    const response = await fetch(`/api/projects/${id}`,{
+  const deleteProject = async(id: string) => {
+    try {
+      const response = await fetch(`/api/projects/${id}`, {
         method: 'DELETE',
       });
-    if (!response.ok) throw new Error('Failed to delete project');
-    setProjects((prevProjects) => prevProjects.filter(project => project._id !== id));
+      
+      if (!response.ok) throw new Error('Failed to delete project');
+      
+      // Only update state if delete was successful
+      setProjects((prevProjects) => prevProjects.filter(project => project._id !== id));
+      setDeleteConfirmation({ open: false, projectId: null });
+    } catch (error) {
+      console.error('Error deleting project:', error);
+    }
   }
 
   // Modify the return statement to combine both API and local projects
   const allProjects = [...projects, ...localProjects];
-  const filteredProjects = allProjects.filter(project =>
-    project.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProjects = allProjects.filter(project => {
+    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTech = filterType === 'all' 
+      ? true 
+      : filterType === 'html-react'
+        ? project.technologies.includes('HTML') && project.technologies.includes('ReactJS')
+        : project.technologies.includes('HTML') && project.technologies.includes('Tailwind CSS');
+    
+    return matchesSearch && matchesTech;
+  });
 
   const handleCreateProject = () => {
+
     if (newProjectName && selectedTech.length > 0) {
       const newProject = {
         _id: Date.now().toString(),
@@ -97,6 +121,43 @@ export default function ProjectsPage() {
     }
   };
 
+  // Add filter options
+  const filterOptions = [
+    { label: 'All projects', value: 'all' },
+    { label: 'HTML & ReactJS', value: 'html-react' },
+    { label: 'HTML & Tailwind', value: 'html-tailwind' },
+  ];
+
+  // Replace the existing filter button with this dropdown
+  const filterButton = (
+    <div className="relative">
+      <button 
+        className="flex h-10 items-center gap-2 rounded-md bg-[#1E1E1E] px-4 text-white"
+        onClick={() => setIsFilterOpen(!isFilterOpen)}
+      >
+        {filterOptions.find(option => option.value === filterType)?.label}
+        <ChevronDown className="h-4 w-4 text-[#F05D23]" />
+      </button>
+
+      {isFilterOpen && (
+        <div className="absolute right-0 mt-2 w-48 rounded-md bg-[#1E1E1E] py-1 shadow-lg">
+          {filterOptions.map((option) => (
+            <button
+              key={option.value}
+              className="block w-full px-4 py-2 text-left text-white hover:bg-[#2A2A2A]"
+              onClick={() => {
+                setFilterType(option.value);
+                setIsFilterOpen(false);
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[#292929] p-6">
       <div className="mb-8 flex items-center justify-between">
@@ -116,10 +177,7 @@ export default function ProjectsPage() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="flex h-10 items-center gap-2 rounded-md bg-[#1E1E1E] px-4 text-white">
-            All projects
-            <ChevronDown className="h-4 w-4 text-[#F05D23]" />
-          </button>
+          {filterButton}
 
           <button
             onClick={() => setIsCreateModalOpen(true)}
@@ -145,7 +203,7 @@ export default function ProjectsPage() {
               <div className="flex items-center gap-4">
                 <h3 className="text-lg font-medium text-white">{project.name}</h3>
                 <div className="flex items-center gap-2">
-                  {project.technologies.map((tech) => (
+                  {project.technologies.map((tech:any) => (
                     <div
                       key={tech}
                       className="flex items-center gap-1 rounded bg-[#1C1C1C] px-2 py-1 text-sm text-gray-400"
