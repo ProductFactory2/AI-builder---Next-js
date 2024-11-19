@@ -3,12 +3,13 @@ import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { email, password } = await req.json();
-    
-    await connectDB();
+    const { email, password, authProvider } = await request.json();
 
+    // Connect to database
+    await connectDB();
+    
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -18,22 +19,24 @@ export async function POST(req: Request) {
       );
     }
 
-    // Hash password before saving
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Create new user with hashed password
+    // Create new user
     const user = await User.create({
       email,
-      password: hashedPassword,
+      password,
+      authProvider: authProvider || 'local'
     });
+
+    console.log('User created successfully:', user);
 
     return NextResponse.json(
       { message: 'User created successfully' },
       { status: 201 }
     );
+
   } catch (error) {
+    console.error('Signup error:', error);
     return NextResponse.json(
-      { error: 'Error creating user' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

@@ -27,12 +27,17 @@ export default function Signup() {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ 
+          email, 
+          password,
+          authProvider: 'local'
+        }),
       })
       
+      const data = await res.json()
+      
       if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.error)
+        throw new Error(data.error || 'Signup failed')
       }
 
       const result = await signIn('credentials', {
@@ -47,9 +52,26 @@ export default function Signup() {
 
       router.push('/dashboard')
     } catch (error) {
+      console.error('Signup error:', error)
       setError(error instanceof Error ? error.message : 'Signup failed')
     }
   }
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signIn('google', {
+        callbackUrl: '/dashboard',
+        redirect: true,
+      });
+  
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('Google signup error:', error);
+      setError('Google signup failed');
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-900 p-8">
@@ -103,40 +125,7 @@ export default function Signup() {
                 type="button"
                 variant="outline"
                 className="w-[250px] h-12 text-base border-gray-700 bg-transparent text-white hover:bg-gray-800"
-                onClick={async () => {
-                  try {
-                    const result = await signIn('google', {
-                      redirect: false,
-                    });
-
-                    if (result?.error) {
-                      throw new Error(result.error);
-                    }
-
-                    if (result?.ok) {
-                      const userCheck = await fetch('/api/auth/check-user', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: result.email }),
-                      });
-
-                      if (userCheck.status === 404) {
-                        await fetch('/api/auth/google-signup', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ 
-                            email: result.email,
-                            googleId: result.providerAccountId 
-                          }),
-                        });
-                      }
-                      
-                      router.push('/dashboard');
-                    }
-                  } catch (error) {
-                    setError('Google signup failed');
-                  }
-                }}
+                onClick={handleGoogleSignIn}
               >
                 <Image src="/images/google.png" alt="Google logo" width={24} height={24} className="mr-3" />
                 Continue with Google

@@ -11,13 +11,8 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Please provide a password'],
+    required: [function() { return this.authProvider === 'local'; }, 'Password is required for local auth'],
     minlength: [6, 'Password should be at least 6 characters'],
-  },
-  name: {
-    type: String,
-    required: [true, 'Please provide a name'],
-    trim: true,
   },
   googleId: {
     type: String,
@@ -28,14 +23,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['local', 'google'],
     default: 'local'
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
   }
 }, {
   timestamps: true
