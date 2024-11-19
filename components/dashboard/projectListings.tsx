@@ -3,6 +3,10 @@
 import * as React from 'react'
 import { useEffect, useState } from "react";
 import { Search, ChevronDown, Plus, Zap, Pencil, Trash2, Code, X } from 'lucide-react'
+import { useDispatch, useSelector } from 'react-redux';
+import type {RootState} from '@/store/store';
+import { addProject } from '@/store/projectSlice';
+import { useRouter } from 'next/navigation';
 
 interface Project {
   _id: string
@@ -28,6 +32,11 @@ export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = React.useState('')
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false)
   const [projects, setProjects] = React.useState<Project[]>([])
+  const [newProjectName, setNewProjectName] = useState('');
+  const [selectedTech, setSelectedTech] = useState<string[]>([]);
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const localProjects = useSelector((state: RootState) => state.projects.localProjects);
 
   // Fetch projects from the server
   useEffect(() => {
@@ -53,10 +62,24 @@ export default function ProjectsPage() {
     setProjects((prevProjects) => prevProjects.filter(project => project._id !== id));
   }
 
-  // Filter projects based on the search query
-  const filteredProjects = projects.filter(project =>
+  // Modify the return statement to combine both API and local projects
+  const allProjects = [...projects, ...localProjects];
+  const filteredProjects = allProjects.filter(project =>
     project.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleCreateProject = () => {
+    if (newProjectName && selectedTech.length > 0) {
+      const newProject = {
+        _id: Date.now().toString(),
+        name: newProjectName,
+        technologies: selectedTech,
+      };
+      dispatch(addProject(newProject));
+      setIsCreateModalOpen(false);
+      router.push('/chatbot');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#292929] p-6">
@@ -146,18 +169,40 @@ export default function ProjectsPage() {
             <input
               type="text"
               placeholder="Project name"
+              value={newProjectName}
+              onChange={(e) => setNewProjectName(e.target.value)}
               className="h-10 w-full rounded-md bg-[#2A2A2A] px-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF5722]"
             />
           </div>
-          <div>
-            <button className="flex h-10 w-full items-center justify-between rounded-md bg-[#2A2A2A] px-4 text-gray-400">
-              Select stack
-              <ChevronDown className="h-4 w-4" />
-            </button>
+          <div className="space-y-2">
+            <div className="text-white mb-2">Select Technologies:</div>
+            <div className="space-x-2">
+              <button
+                onClick={() => setSelectedTech(['HTML', 'ReactJS'])}
+                className={`px-4 py-2 rounded ${
+                  selectedTech.join(',') === 'HTML,ReactJS' 
+                    ? 'bg-[#F05D23] text-white' 
+                    : 'bg-[#2A2A2A] text-gray-400'
+                }`}
+              >
+                HTML & ReactJS
+              </button>
+              <button
+                onClick={() => setSelectedTech(['HTML', 'Tailwind CSS'])}
+                className={`px-4 py-2 rounded ${
+                  selectedTech.join(',') === 'HTML,Tailwind CSS' 
+                    ? 'bg-[#F05D23] text-white' 
+                    : 'bg-[#2A2A2A] text-gray-400'
+                }`}
+              >
+                HTML & Tailwind CSS
+              </button>
+            </div>
           </div>
           <button
-            onClick={() => setIsCreateModalOpen(false)}
-            className="mt-4 h-10 w-full rounded-md bg-[#F05D23] font-medium text-white hover:bg-[#F05D23]/90"
+            onClick={handleCreateProject}
+            className="mt-4 h-10 w-full rounded-md bg-[#F05D23] font-medium text-white hover:bg-[#F05D23]/90 disabled:opacity-50"
+            disabled={!newProjectName || selectedTech.length === 0}
           >
             Create
           </button>

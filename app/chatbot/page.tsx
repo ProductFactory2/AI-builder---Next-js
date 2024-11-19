@@ -68,11 +68,12 @@ export default function Component() {
               className="object-cover"
             />
           </div>
-          <h1 className="text-white text-xl font-semibold">Website Design Assistant</h1>
+          <h1 className="text-white text-xl font-semibold">Catmod</h1>
+          <h1 className=" text-orange-700 text-xl font-semibold">AI</h1>
         </div>
         <button className="px-4 py-2 bg-[#FF5722] text-white rounded-lg flex items-center space-x-2">
-          <span>:sparkles:</span>
-          <span>Design</span>
+          <span>✨</span>
+          <span>Pur-duce</span>
         </button>
       </header>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

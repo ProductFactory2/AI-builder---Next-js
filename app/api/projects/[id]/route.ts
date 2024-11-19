@@ -1,5 +1,5 @@
 import Project from '@/models/project'
-import connectMongoDB from   '@/lib/mongodb'
+import connectMongoDB from '@/lib/mongodb'
 
 export const DELETE = async (req: Request, context : any) => {
   await connectMongoDB();
