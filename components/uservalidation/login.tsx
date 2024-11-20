@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,6 +27,7 @@ export default function Login() {
       })
 
       const data = await res.json()
+      console.log('Login response:', data)
 
       if (!res.ok) {
         if (res.status === 404) {
@@ -37,13 +38,50 @@ export default function Login() {
         throw new Error(data.error || 'Login failed')
       }
 
-      // Store user data in localStorage or state management
-      localStorage.setItem('user', JSON.stringify(data.user))
+      // Ensure signIn is called on the client side
+      const signInUser = async () => {
+        const result = await signIn('credentials', {
+          redirect: false,
+          email,
+          password,
+        })
 
-      router.push('/dashboard')
+        if (result?.error) {
+          throw new Error(result.error)
+        }
+        
+        location.reload()
+        router.push('/dashboard')
+      }
+
+      signInUser()
     } catch (error) {
       console.error('Login error:', error)
       setError(error instanceof Error ? error.message : 'Login failed')
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    try {
+      // Check if email exists with local auth
+      const checkRes = await fetch('/api/auth/check-auth-provider', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+
+      const { authProvider } = await checkRes.json()
+      
+      if (authProvider === 'local') {
+        setError('This email is registered with password. Please use password login.')
+        return
+      }
+
+      await signIn('google', {
+        callbackUrl: '/dashboard'
+      })
+    } catch (error) {
+      setError('Authentication failed')
     }
   }
 
@@ -124,15 +162,7 @@ export default function Login() {
                 type="button"
                 variant="outline"
                 className="w-[250px] h-12 text-base border-gray-700 bg-transparent text-white hover:bg-gray-800"
-                onClick={async () => {
-                  try {
-                    await signIn('google', {
-                      callbackUrl: '/dashboard'
-                    })
-                  } catch (error) {
-                    setError('Authentication failed')
-                  }
-                }}
+                onClick={handleGoogleSignIn}
               >
                 <Image src="/images/google.png" alt="Google logo" width={24} height={24} className="mr-3" />
                 Continue with Google
