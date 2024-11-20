@@ -38,7 +38,7 @@ const handler = NextAuth({
   ],
   pages: {
     signIn: '/login',
-    signUp: '/signup',
+    //signUp: '/signup',
   },
   callbacks: {
     async signIn({ user, account }) {

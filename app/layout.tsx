@@ -4,6 +4,7 @@ import "./globals.css";
 import Provider from "./providers";
 import { Providers } from "@/store/provider";
 
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -31,16 +32,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/images/cat.png" />
-        <link rel="apple-touch-icon" href="/images/cat.png" />
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Provider>
-          <Providers>{children}</Providers>
-        </Provider>
+      <body>
+        <Providers>
+          <Provider>
+            <Providers>{children}</Providers>
+          </Provider>
+        </Providers>
       </body>
     </html>
   );

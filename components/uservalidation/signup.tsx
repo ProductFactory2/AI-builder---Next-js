@@ -23,7 +23,27 @@ export default function Signup() {
     e.preventDefault()
     setError('')
 
+    // Basic validation
+    if (!email || !password) {
+      setError('Please fill in all fields')
+      return
+    }
+
     try {
+      // Check if user exists first
+      const checkUser = await fetch('/api/auth/check-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+
+      const userData = await checkUser.json()
+      if (userData?.exists) {
+        setError('User already exists. Please use login instead.')
+        return
+      }
+
+      // Proceed with signup only if user doesn't exist
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -40,20 +60,24 @@ export default function Signup() {
         throw new Error(data.error || 'Signup failed')
       }
 
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
+      const loginRes = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       })
 
-      if (result?.error) {
-        throw new Error(result.error)
+      const loginData = await loginRes.json()
+
+      if (!loginRes.ok) {
+        throw new Error(loginData.error || 'Login failed')
       }
 
+      localStorage.setItem('user', JSON.stringify(loginData.user))
+      
       router.push('/dashboard')
     } catch (error) {
       console.error('Signup error:', error)
-      setError(error instanceof Error ? error.message : 'Signup failed')
+      setError(error instanceof Error ? error.message : 'Something went wrong. Please try again.')
     }
   }
 
@@ -102,6 +126,9 @@ export default function Signup() {
                   className="bg-white h-12 text-base text-black"
                   placeholder="Create Password"
                 />
+                {error && (
+                  <p className="text-red-500 text-sm mt-1 text-center">{error} </p>
+                )}
               </div>
 
               <div className="flex justify-center pt-4">
