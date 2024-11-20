@@ -108,8 +108,10 @@ export default function ChatbotPage() {
           disabled={!finalPrompt}
           onClick={handlePurduce}
         >
-          <span>:sparkles:</span>
+          <span><Image src='/foot-print.svg' alt="foot-print"  className="object-cover"  width={30} height={30}></Image></span>
           <span>Pur-duce</span>
+
+
         </button>
       </header>
       <div
