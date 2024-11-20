@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import { signIn } from 'next-auth/react';
 
 export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
     await connectDB();
 
-    // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
       return NextResponse.json(
@@ -16,7 +16,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if user is using Google auth
     if (user.authProvider === 'google') {
       return NextResponse.json(
         { error: 'Please login with Google' },
@@ -24,7 +23,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify password
     const isValidPassword = await user.comparePassword(password);
     if (!isValidPassword) {
       return NextResponse.json(
@@ -33,7 +31,13 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ message: 'Login successful' });
+    // await signIn('credentials', {
+    //   redirect: false,
+    //   email: user.email,
+    //   password,
+    // });
+
+    return NextResponse.json({ message: 'Login successful', data: user });
 
   } catch (error) {
     console.error('Login error:', error);

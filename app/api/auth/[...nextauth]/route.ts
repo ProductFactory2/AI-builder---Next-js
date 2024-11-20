@@ -20,6 +20,10 @@ const handler = NextAuth({
         await connectDB();
         const user = await User.findOne({ email: credentials.email });
 
+        if (user && user.authProvider === 'google') {
+          throw new Error('This email is registered with Google. Please use Google Sign In.');
+        }
+
         if (!user || !(await user.comparePassword(credentials.password))) {
           throw new Error('Invalid email or password');
         }
@@ -49,8 +53,11 @@ const handler = NextAuth({
           // Check if user exists with this email
           let dbUser = await User.findOne({ email: user.email });
           
+          if (dbUser && dbUser.authProvider === 'local') {
+            throw new Error('This email is registered with password. Please use password login.');
+          }
+
           if (dbUser) {
-            // If user exists but doesn't have googleId, update it
             if (!dbUser.googleId) {
               await User.findByIdAndUpdate(dbUser._id, {
                 googleId: user.id,
@@ -58,7 +65,6 @@ const handler = NextAuth({
               });
             }
           } else {
-            // Create new user if doesn't exist
             dbUser = await User.create({
               email: user.email,
               googleId: user.id,
