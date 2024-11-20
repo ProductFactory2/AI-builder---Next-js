@@ -89,7 +89,7 @@ export default function ChatbotPage() {
         <div className="flex items-center space-x-2">
           <div className="w-10 h-10 rounded-full overflow-hidden">
             <Image
-              src="/images/logocat.png"
+              src="/assets/images/logocat.png"
               alt="Website Design AI"
               width={40}
               height={40}
@@ -127,7 +127,7 @@ export default function ChatbotPage() {
               {message.role === "assistant" && (
                 <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                   <Image
-                    src="/images/logocat.png"
+                    src="/assets/images/logocat.png"
                     alt="AI"
                     width={32}
                     height={32}
