@@ -1,17 +1,26 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { store } from "@/store/store";
+import { clearProjects } from "@/store/projectSlice";
+import { useSession } from "next-auth/react";
 interface Message {
   role: "user" | "assistant" | "system";
   content: string;
 }
 export default function ChatbotPage() {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [finalPrompt, setFinalPrompt] = useState<string | null>(null);
   const [isConversationComplete, setIsConversationComplete] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [isBackModalOpen, setIsBackModalOpen] = useState(false);
+  const [isRefreshModalOpen, setIsRefreshModalOpen] = useState(false);
+  const { data: session } = useSession();
   useEffect(() => {
     const initialMessage: Message = {
       role: "assistant",
@@ -77,12 +86,116 @@ export default function ChatbotPage() {
       setIsLoading(false);
     }
   }
-  const handlePurduce = () => {
-    if (finalPrompt) {
-      alert(`Pur-duce initiated with final prompt: ${finalPrompt}`);
-      // Implement your generation logic here
+  const handlePurduce = async () => {
+    
+    if (!finalPrompt || !session?.user?.id) {
+      console.error("Missing required data");
+      return;
+    }
+
+    try {
+      const name = store.getState().projects.localProjects[0].name;
+      const technologies = store.getState().projects.localProjects[0].technologies;
+      const userId = session.user.id;
+      
+      console.log(finalPrompt, userId, name, technologies);
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          finalPrompt, 
+          userId, 
+          name, 
+          technologies 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      store.dispatch(clearProjects());
+      const data = await response.json();
+      console.log('Project created:', data);
+      router.push('/dashboard'); // Redirect to dashboard after successful creation
+    } catch (error) {
+      console.error("Error creating project:", error);
+      // You might want to show an error message to the user here
     }
   };
+
+  const handleOut = () => {
+    console.log('handleback called');
+    console.log('messages length:', messages.length);
+    
+    if (messages.length > 0 || finalPrompt || isConversationComplete || input.trim()) {
+      console.log('Opening modal');
+      setIsBackModalOpen(true);
+      store.dispatch(clearProjects());
+    } else {
+      console.log('Redirecting to dashboard');
+      router.push('/dashboard');
+    }
+  };
+
+  useEffect(() => {
+    // Handle browser back/forward buttons and manual URL changes
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (messages.length > 1 || finalPrompt || isConversationComplete || input.trim()) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+
+    // Handle navigation attempts within the app
+    const handleNavigation = () => {
+      if (messages.length > 1 || finalPrompt || isConversationComplete || input.trim()) {
+        handleOut();
+        return false;
+      }
+      return true;
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handleNavigation);
+
+    // Intercept all link clicks
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a');
+      if (link && !link.hasAttribute('data-internal')) {
+        e.preventDefault();
+        handleOut();
+      }
+    };
+
+    document.addEventListener('click', handleClick);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handleNavigation);
+      document.removeEventListener('click', handleClick);
+    };
+  }, [messages.length, finalPrompt, isConversationComplete, input]);
+
+  const handleRefresh = (e: BeforeUnloadEvent) => {
+    if (messages.length > 1 || finalPrompt || isConversationComplete || input.trim()) {
+      e.preventDefault();
+      e.returnValue = '';
+      return '';
+    }
+  };
+
+  const handleCustomRefresh = () => {
+    if (messages.length > 1 || finalPrompt || isConversationComplete || input.trim()) {
+      setIsRefreshModalOpen(true);
+    } else {
+      window.location.reload();
+    }
+  };
+
+
+
   return (
     <main className="flex flex-col h-screen bg-[#1E1E1E]">
       <header className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
@@ -96,8 +209,14 @@ export default function ChatbotPage() {
               className="object-cover"
             />
           </div>
-          <h1 className="text-white text-xl font-semibold">Catmod</h1>
-          <h1 className="text-orange-700 text-xl font-semibold">AI</h1>
+          <Link href="#" onClick={(e) => {
+            e.preventDefault();
+            handleOut();
+          }}>
+            <h1 className="text-white text-xl font-semibold">
+              Catmod <span className="text-orange-700 text-xl font-semibold">AI</span>
+            </h1>
+          </Link>
         </div>
         <button
           className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
@@ -216,12 +335,70 @@ export default function ChatbotPage() {
           </button>
         </div>
       </form>
+      
+      {isBackModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+          <div className="bg-[#1E1E1E] rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-xl text-white font-semibold mb-4">
+              Leave Page?
+            </h2>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to leave? Your conversation progress will be lost.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => {
+                  console.log('Cancel clicked');
+                  setIsBackModalOpen(false);
+                }}
+                className="px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  console.log('Leave clicked');
+                  setIsBackModalOpen(false);
+                  router.push('/dashboard');
+                }}
+                className="px-4 py-2 rounded-md bg-[#FF5722] text-white hover:bg-[#FF7043]"
+              >
+                Leave
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isRefreshModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+          <div className="bg-[#1E1E1E] rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-xl text-white font-semibold mb-4">
+              Refresh Page?
+            </h2>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to refresh? Your conversation progress will be lost.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => {
+                  console.log('Cancel refresh clicked');
+                  setIsRefreshModalOpen(false);
+                }}
+                className="px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCustomRefresh}
+                className="px-4 py-2 rounded-md bg-[#FF5722] text-white hover:bg-[#FF7043]"
+              >
+                Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
-
-
-
-
-
-

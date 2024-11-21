@@ -1,5 +1,5 @@
 import Project from '@/models/project'
-import connectMangoDB from '@/lib/mongodb'
+import connectMongoDB from '@/lib/mongodb'
 
 export const GET = async(request: Request) => {
   try {
@@ -10,7 +10,7 @@ export const GET = async(request: Request) => {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    await connectMangoDB();
+    await connectMongoDB();
     const projects = await Project.find({ userId: userId });
     return new Response(JSON.stringify(projects), {
       status: 200,
@@ -23,8 +23,8 @@ export const GET = async(request: Request) => {
 
 export async function POST(request: Request) {
   try {
-    await connectMangoDB();
-    const { name, technologies, userId } = await request.json();
+    await connectMongoDB();
+    const { name, technologies, userId, finalPrompt } = await request.json();
     
     if (!userId) {
       return new Response('Unauthorized', { status: 401 });
@@ -33,7 +33,8 @@ export async function POST(request: Request) {
     const project = await Project.create({
       name,
       technologies,
-      userId
+      userId,
+      finalPrompt
     });
     
     return new Response(JSON.stringify(project), {

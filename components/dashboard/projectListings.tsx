@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { useEffect, useState } from "react";
-import { Search, ChevronDown, Plus, Zap, Pencil, Trash2, Code, X } from 'lucide-react'
+import { Search, ChevronDown, Plus, Zap, Pencil, Trash2, Code, X ,SquareTerminal} from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux';
 import type {RootState} from '@/store/store';
 import { addProject } from '@/store/projectSlice';
@@ -15,6 +15,7 @@ interface Project {
   _id: string
   name: string
   technologies: string[]
+  finalPrompt?: string
 }
 
 const Dialog = ({ open, onOpenChange, children }: { open: boolean; onOpenChange: (open: boolean) => void; children: React.ReactNode }) => {
@@ -47,7 +48,8 @@ export default function ProjectsPage() {
   const { data: session } = useSession()
   const [filterType, setFilterType] = useState<string>('all');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-
+  const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
+  const [selectedProjectPrompt, setSelectedProjectPrompt] = useState<string>('');
   // Fetch projects from the server
   useEffect(() => {
     fetchProjects();
@@ -158,6 +160,11 @@ export default function ProjectsPage() {
     </div>
   );
 
+  const openPromptModal = (project: Project) => {
+    setSelectedProjectPrompt(project.finalPrompt || '');
+    setIsPromptModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-[#292929] p-6">
       <div className="mb-8 flex items-center justify-between">
@@ -218,6 +225,12 @@ export default function ProjectsPage() {
               </div>
 
               <div className="flex items-center gap-2">
+                <button 
+                  className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white"
+                  onClick={() => openPromptModal(project)}
+                >
+                  <SquareTerminal className="h-4 w-4 text-[#F05D23]" />
+                </button>
                 <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
                   <Zap className="h-4 w-4 text-[#F05D23]"  />
                 </button>
@@ -234,7 +247,21 @@ export default function ProjectsPage() {
             </div>
           ))}
         </div>
+        
       )}
+
+<Dialog open={isPromptModalOpen} onOpenChange={setIsPromptModalOpen}>
+        <div className="space-y-4">
+          <h2 className="text-center text-white text-2xl font-semibold">Project Prompt</h2>
+          <div>
+            <textarea
+              value={selectedProjectPrompt}
+              readOnly
+              className="h-48 w-full rounded-md bg-[#2A2A2A] px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF5722]"
+            />
+          </div>
+        </div>
+      </Dialog>
 
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <div className="space-y-4">
@@ -303,6 +330,7 @@ export default function ProjectsPage() {
           </div>
         </div>
       </Dialog>
+      
     </div>
   )
 }
