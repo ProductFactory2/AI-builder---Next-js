@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -23,6 +24,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['local', 'google'],
     default: 'local'
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  otp: {
+    code: String,
+    expiresAt: Date
+  },
+  resetPassword: {
+    token: String,
+    expiresAt: Date
   }
 }, {
   timestamps: true
@@ -46,6 +59,17 @@ userSchema.pre('save', async function(next) {
 userSchema.methods.comparePassword = async function(candidatePassword: string) {
   if (this.googleId) return false; // Don't allow password login for Google accounts
   return bcrypt.compare(candidatePassword, this.password);
+};
+
+userSchema.methods.generateResetToken = function() {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  
+  this.resetPassword = {
+    token: crypto.createHash('sha256').update(resetToken).digest('hex'),
+    expiresAt: new Date(Date.now() + 3600000) // 1 hour
+  };
+  
+  return resetToken;
 };
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);

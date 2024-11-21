@@ -23,7 +23,8 @@ export async function POST(request: Request) {
     const user = await User.create({
       email,
       password,
-      authProvider: authProvider || 'local'
+      authProvider: authProvider || 'local',
+      isVerified: false
     });
 
     console.log('User created successfully:', user);
