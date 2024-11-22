@@ -1,5 +1,4 @@
 'use client'
-
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
@@ -9,11 +8,9 @@ import { PasswordInput } from '@/components/ui/password-input'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-
 interface SignupProps {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
-
 export default function Signup() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -25,7 +22,6 @@ export default function Signup() {
   const [isTimerRunning, setIsTimerRunning] = useState(false)
   const [otpError, setOtpError] = useState('')
   const [isVerified, setIsVerified] = useState(false)
-
   useEffect(() => {
     let interval: NodeJS.Timeout
     if (isTimerRunning && timer > 0) {
@@ -37,17 +33,14 @@ export default function Signup() {
     }
     return () => clearInterval(interval)
   }, [timer, isTimerRunning])
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-
     // Basic validation
     if (!email || !password) {
       setError('Please fill in all fields')
       return
     }
-
     try {
       // Check if user exists first
       const checkUser = await fetch('/api/auth/check-user', {
@@ -55,31 +48,26 @@ export default function Signup() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       })
-
       const userData = await checkUser.json()
       if (userData?.exists) {
         setError('User already exists. Please use login instead.')
         return
       }
-
       // Proceed with signup only if user doesn't exist
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email, 
+        body: JSON.stringify({
+          email,
           password,
           authProvider: 'local',
           isVerified: false
         }),
       })
-      
       const data = await res.json()
-      
       if (!res.ok) {
         throw new Error(data.error || 'Signup failed')
       }
-
       // Show OTP modal and send initial OTP
       setShowOtpModal(true)
       await sendOTP()
@@ -88,7 +76,6 @@ export default function Signup() {
       setError(error instanceof Error ? error.message : 'Something went wrong. Please try again.')
     }
   }
-
   const sendOTP = async () => {
     try {
       const res = await fetch('/api/auth/send-otp', {
@@ -96,19 +83,17 @@ export default function Signup() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       })
-
       if (!res.ok) {
         throw new Error('Failed to send OTP')
       }
-
       setTimer(60)
       setIsTimerRunning(true)
       setOtpError('')
     } catch (error) {
+      console.log("error",error)
       setOtpError('Failed to send OTP. Please try again.')
     }
   }
-
   const verifyOTP = async () => {
     try {
       const res = await fetch('/api/auth/verify-otp', {
@@ -116,22 +101,26 @@ export default function Signup() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp }),
       })
-
       const data = await res.json()
-
       if (!res.ok) {
         throw new Error(data.error || 'Invalid OTP')
       }
-
       setIsVerified(true)
-      setTimeout(() => {
-        router.push('/login')
-      }, 2000)
+      // Sign in the user automatically after verification
+      const signInResult = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
+      if (signInResult?.error) {
+        throw new Error('Failed to sign in')
+      }
+      // Redirect to dashboard immediately
+      router.push('/dashboard')
     } catch (error) {
       setOtpError(error instanceof Error ? error.message : 'Invalid OTP')
     }
   }
-
   const handleGoogleSignIn = async () => {
     try {
       // First check if user exists and their auth provider
@@ -140,19 +129,15 @@ export default function Signup() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email })
       });
-      
       const { authProvider } = await checkRes.json();
-      
       if (authProvider === 'local') {
         router.push('/error?error=AccessDenied');
         return;
       }
-
       const result = await signIn('google', {
         callbackUrl: '/dashboard',
         redirect: true,
       });
-
       if (result?.error) {
         throw new Error(result.error);
       }
@@ -161,7 +146,6 @@ export default function Signup() {
       setError('Google signup failed');
     }
   };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-900 p-8">
       <div className="relative w-full max-w-[1200px] overflow-hidden rounded-[40px] bg-white/10 backdrop-blur-[20px] shadow-2xl">
@@ -171,7 +155,6 @@ export default function Signup() {
             <div className="space-y-3 text-center">
               <h1 className="text-4xl font-bold">Welcome Aboard !!!</h1>
             </div>
-
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-3">
                 <Input
@@ -195,14 +178,12 @@ export default function Signup() {
                   <p className="text-red-500 text-sm mt-1 text-center">{error} </p>
                 )}
               </div>
-
               <div className="flex justify-center pt-4">
                 <Button type="submit" className="w-[250px] h-12 text-base bg-orange-500 hover:bg-orange-600">
                   CONTINUE
                 </Button>
               </div>
             </form>
-
             <div className="relative py-4">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-700"></div>
@@ -211,7 +192,6 @@ export default function Signup() {
                 <span className="bg-zinc-900 px-4 text-gray-400">Or</span>
               </div>
             </div>
-
             <div className="flex justify-center">
               <Button
                 type="button"
@@ -223,7 +203,6 @@ export default function Signup() {
                 Continue with Google
               </Button>
             </div>
-
             <p className="text-center text-base text-gray-400">
               Already have an account?{' '}
               <Link href="/login" className="text-orange-500 hover:text-orange-400">
@@ -231,7 +210,6 @@ export default function Signup() {
               </Link>
             </p>
           </div>
-
           {/* Right side - Image */}
           <div className="flex items-center justify-center bg-gray-100 p-12">
             <div className="relative h-96 w-96">
@@ -246,7 +224,6 @@ export default function Signup() {
           </div>
         </div>
       </div>
-
       <Dialog open={showOtpModal} onOpenChange={setShowOtpModal}>
         <DialogContent className="bg-zinc-900 text-white border-gray-700">
           <DialogHeader className="space-y-3 text-center">
@@ -255,7 +232,6 @@ export default function Signup() {
               We've sent a verification code to your email address
             </p>
           </DialogHeader>
-
           <div className="space-y-6 p-4">
             <Input
               type="text"
@@ -265,12 +241,10 @@ export default function Signup() {
               disabled={!isTimerRunning || isVerified}
               className="bg-white h-12 text-base text-black"
             />
-            
             {otpError && <p className="text-red-500 text-sm text-center">{otpError}</p>}
             {isVerified && (
               <p className="text-green-500 text-sm text-center">User Verified Successfully</p>
             )}
-            
             <div className="flex flex-col space-y-4">
               <Button
                 onClick={verifyOTP}
@@ -279,7 +253,6 @@ export default function Signup() {
               >
                 Verify OTP
               </Button>
-              
               <div className="relative py-4">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-700"></div>
@@ -288,7 +261,6 @@ export default function Signup() {
                   <span className="bg-zinc-900 px-4 text-gray-400">Or</span>
                 </div>
               </div>
-
               <Button
                 onClick={sendOTP}
                 disabled={isTimerRunning || isVerified}
