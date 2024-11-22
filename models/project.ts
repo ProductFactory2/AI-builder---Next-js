@@ -13,6 +13,10 @@ const projectSchema = new Schema({
         type: Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    finalPrompt: {
+        type: String,
+        required: true
     }
 }, {
     timestamps: true  // Optional: adds createdAt and updatedAt fields
