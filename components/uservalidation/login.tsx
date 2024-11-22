@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,41 +20,26 @@ export default function Login() {
     setError('')
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+      // Attempt NextAuth signin directly
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false
       })
 
-      const data = await res.json()
-      console.log('Login response:', data)
-
-      if (!res.ok) {
-        if (res.status === 404) {
-          throw new Error('User not found. Please signup.')
-        } else if (res.status === 401) {
-          throw new Error('Incorrect password. Please try again.')
+      if (result?.error) {
+        // Handle specific error cases
+        if (result.error === 'Please verify your email before logging in') {
+          setError('Please verify your email. Check your inbox for the verification link.')
+          return
         }
-        throw new Error(data.error || 'Login failed')
+        setError(result.error)
+        return
       }
 
-      // Ensure signIn is called on the client side
-      const signInUser = async () => {
-        const result = await signIn('credentials', {
-          redirect: false,
-          email,
-          password,
-        })
+      // Successful login, redirect to dashboard
+      router.push('/dashboard')
 
-        if (result?.error) {
-          throw new Error(result.error)
-        }
-        
-        location.reload()
-        router.push('/dashboard')
-      }
-
-      signInUser()
     } catch (error) {
       console.error('Login error:', error)
       setError(error instanceof Error ? error.message : 'Login failed')
@@ -63,25 +48,32 @@ export default function Login() {
 
   const handleGoogleSignIn = async () => {
     try {
-      // Check if email exists with local auth
+      // Check auth provider before Google sign-in
       const checkRes = await fetch('/api/auth/check-auth-provider', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email })
       })
-
+      
       const { authProvider } = await checkRes.json()
       
       if (authProvider === 'local') {
-        setError('This email is registered with password. Please use password login.')
+        setError('This email is registered manually. Please use password to sign in.')
         return
       }
-
-      await signIn('google', {
-        callbackUrl: '/dashboard'
+  
+      const result = await signIn('google', { 
+        redirect: false 
       })
+      
+      if (result?.error) {
+        setError('Failed to sign in with Google')
+        return
+      }
+  
+      router.push('/dashboard')
     } catch (error) {
-      setError('Authentication failed')
+      setError('An error occurred during sign in')
     }
   }
 
@@ -115,7 +107,6 @@ export default function Login() {
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
                   className="bg-white h-12 text-base text-black"
                 />
               </div>
@@ -123,24 +114,33 @@ export default function Login() {
                 <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
                   className="bg-white h-12 text-base text-black"
                   placeholder="Password"
                 />
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="text-sm text-orange-500 hover:text-orange-400 p-0 h-auto"
+                    onClick={() => router.push('/forgot-password')}
+                  >
+                    Forgot Password?
+                  </Button>
+                </div>
               </div>
-
-              <div className="text-right">
-                <Link href="/forgot-password" className="text-base text-gray-400 hover:text-white">
-                  Forget Password?
-                </Link>
-              </div>
-
               {error && (
-                <div className="text-red-500 text-center">
-                  {error}
+                <div className="text-center">
+                  <p className="text-red-500 text-sm">{error}</p>
+                  {error.includes('verify your email') && (
+                    <p className="text-gray-400 text-xs mt-1">
+                      Didn't receive verification email?{' '}
+                      <Link href="/signup" className="text-orange-500 hover:text-orange-400">
+                        Sign up again
+                      </Link>
+                    </p>
+                  )}
                 </div>
               )}
-
               <div className="flex justify-center pt-4">
                 <Button type="submit" className="w-[250px] h-12 text-base bg-orange-500 hover:bg-orange-600">
                   CONTINUE

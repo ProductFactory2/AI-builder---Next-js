@@ -28,6 +28,10 @@ const handler = NextAuth({
           throw new Error('Invalid email or password');
         }
 
+        if (!user.isVerified) {
+          throw new Error('Please verify your email before logging in');
+        }
+
         return {
           id: user._id.toString(),
           email: user.email,
@@ -42,7 +46,7 @@ const handler = NextAuth({
   ],
   pages: {
     signIn: '/login',
-    //signUp: '/signup',
+    error: '/error',
   },
   callbacks: {
     async signIn({ user, account }) {
@@ -50,31 +54,31 @@ const handler = NextAuth({
         try {
           await connectDB();
           
-          // Check if user exists with this email
           let dbUser = await User.findOne({ email: user.email });
           
           if (dbUser && dbUser.authProvider === 'local') {
-            throw new Error('This email is registered with password. Please use password login.');
+            throw new Error('This email is registered manually. Please use password to Sign In.');
           }
 
           if (dbUser) {
             if (!dbUser.googleId) {
               await User.findByIdAndUpdate(dbUser._id, {
                 googleId: user.id,
-                authProvider: 'google'
+                authProvider: 'google',
+                isVerified: true
               });
             }
           } else {
             dbUser = await User.create({
               email: user.email,
               googleId: user.id,
-              authProvider: 'google'
+              authProvider: 'google',
+              isVerified: true
             });
           }
           return true;
         } catch (error) {
-          console.error('Google sign in error:', error);
-          return false;
+          return '/error?error=AccessDenied';
         }
       }
       return true;
