@@ -1,0 +1,77 @@
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+
+const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: [true, 'Please provide an email'],
+    unique: true,
+    lowercase: true,
+    trim: true,
+  },
+  password: {
+    type: String,
+    required: [function(this: any) { return this.authProvider === 'local'; }, 'Password is required for local auth'],
+    minlength: [6, 'Password should be at least 6 characters'],
+  },
+  googleId: {
+    type: String,
+    sparse: true,
+    unique: true,
+  },
+  authProvider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local'
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  otp: {
+    code: String,
+    expiresAt: Date
+  },
+  resetPassword: {
+    token: String,
+    expiresAt: Date
+  }
+}, {
+  timestamps: true
+});
+
+// Hash password before saving (only for local auth)
+userSchema.pre('save', async function(next) {
+    if (!this.isModified('password') || this.googleId) return next();
+    
+    try {
+      if (!this.password) throw new Error('Password is required');
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+      next();
+    } catch (error) {
+      next(error as Error);
+    }
+  });
+
+// Method to compare password
+userSchema.methods.comparePassword = async function(candidatePassword: string) {
+  if (this.googleId) return false; // Don't allow password login for Google accounts
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+userSchema.methods.generateResetToken = function() {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  
+  this.resetPassword = {
+    token: crypto.createHash('sha256').update(resetToken).digest('hex'),
+    expiresAt: new Date(Date.now() + 3600000) // 1 hour
+  };
+  
+  return resetToken;
+};
+
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+
+export default User;
