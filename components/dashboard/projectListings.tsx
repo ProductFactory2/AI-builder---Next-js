@@ -22,7 +22,7 @@ const Dialog = ({ open, onOpenChange, children }: { open: boolean; onOpenChange:
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="relative w-full max-w-md rounded-lg bg-[#1C1C1C] p-6">
+      <div className="relative w-[95%] sm:w-full max-w-md rounded-lg bg-[#1C1C1C] p-6">
         <button onClick={() => onOpenChange(false)} className="absolute right-4 top-4 text-gray-400 hover:text-white">
           <X className="h-6 w-6" />
         </button>
@@ -171,27 +171,26 @@ export default function ProjectsPage() {
         <h1 className="text-2xl font-semibold text-white">Your Projects</h1>
       </div>
 
-      <div className="mb-8 flex items-center justify-between gap-4">
-        <div className="relative flex-1">
+      <div className="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="relative w-full sm:flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Search your project"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-10 rounded-md bg-[#1E1E1E] pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF5722] max-w-7xl"
+            className="w-full h-10 rounded-md bg-[#1E1E1E] pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF5722]"
           />
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex w-full sm:w-auto items-center gap-4">
           {filterButton}
-
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex h-10 items-center gap-2 rounded-md bg-[#F05D23] px-4 text-white hover:bg-[#F05D23]/90 shadow-lg shadow-orange-400/50"
+            className="flex-1 sm:flex-none h-10 items-center gap-2 rounded-md bg-[#F05D23] px-4 text-white hover:bg-[#F05D23]/90 shadow-lg shadow-orange-400/50"
           >
-            <Plus className="h-4 w-4" />
-            Create
+            {/* <Plus className="h-4 w-4" /> */}
+            + Create
           </button>
         </div>
       </div>
@@ -205,11 +204,11 @@ export default function ProjectsPage() {
           {filteredProjects.map((project) => (
             <div
               key={project._id}
-              className="flex items-center justify-between rounded-lg border border-[#FF5722]/10 bg-[#1E1E1E] p-5 hover:border-[#FF5722]/50"
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border border-[#FF5722]/10 bg-[#1E1E1E] p-5 hover:border-[#FF5722]/50 gap-4"
             >
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
                 <h3 className="text-lg font-medium text-white">{project.name}</h3>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {project.technologies.map((tech:any) => (
                     <div
                       key={tech}
@@ -224,7 +223,7 @@ export default function ProjectsPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                 <button 
                   className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white"
                   onClick={() => openPromptModal(project)}

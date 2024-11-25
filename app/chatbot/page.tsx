@@ -6,6 +6,12 @@ import { useRouter, usePathname } from "next/navigation";
 import { store } from "@/store/store";
 import { clearProjects } from "@/store/projectSlice";
 import { useSession } from "next-auth/react";
+import Foot from "@/public/foot-print.svg";
+import Logo from "@/public/assets/images/logo.png";
+import UserIcon from "@/public/images/images.png";
+import { Paperclip, File } from "lucide-react";
+import ImageIcon from "@/public/images/img.png";
+import FilePdf from "@/public/images/pdf.png";
 interface Message {
   role: "user" | "assistant" | "system";
   content: string;
@@ -21,11 +27,11 @@ export default function ChatbotPage() {
   const [isBackModalOpen, setIsBackModalOpen] = useState(false);
   const [isRefreshModalOpen, setIsRefreshModalOpen] = useState(false);
   const { data: session } = useSession();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   useEffect(() => {
     const initialMessage: Message = {
       role: "assistant",
-      content:
-        "Hello! I'm here to help you design your website.",
+      content: "Hello! I'm here to help you design your website.",
     };
     setMessages([initialMessage]);
   }, []);
@@ -43,7 +49,7 @@ export default function ChatbotPage() {
     setInput("");
     setIsLoading(true);
     try {
-      const response = await fetch("/api/chatgpt", {
+      const response = await fetch("/api/chatgpt-chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -87,7 +93,6 @@ export default function ChatbotPage() {
     }
   }
   const handlePurduce = async () => {
-    
     if (!finalPrompt || !session?.user?.id) {
       console.error("Missing required data");
       return;
@@ -95,18 +100,19 @@ export default function ChatbotPage() {
 
     try {
       const name = store.getState().projects.localProjects[0].name;
-      const technologies = store.getState().projects.localProjects[0].technologies;
+      const technologies =
+        store.getState().projects.localProjects[0].technologies;
       const userId = session.user.id;
-      
+
       console.log(finalPrompt, userId, name, technologies);
-      const response = await fetch('/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          finalPrompt, 
-          userId, 
-          name, 
-          technologies 
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          finalPrompt,
+          userId,
+          name,
+          technologies,
         }),
       });
 
@@ -115,8 +121,8 @@ export default function ChatbotPage() {
       }
       store.dispatch(clearProjects());
       const data = await response.json();
-      console.log('Project created:', data);
-      router.push('/dashboard'); // Redirect to dashboard after successful creation
+      console.log("Project created:", data);
+      router.push("/dashboard"); // Redirect to dashboard after successful creation
     } catch (error) {
       console.error("Error creating project:", error);
       // You might want to show an error message to the user here
@@ -124,97 +130,137 @@ export default function ChatbotPage() {
   };
 
   const handleOut = () => {
-    console.log('handleback called');
-    console.log('messages length:', messages.length);
-    
-    if (messages.length > 0 || finalPrompt || isConversationComplete || input.trim()) {
-      console.log('Opening modal');
+    console.log("handleback called");
+    console.log("messages length:", messages.length);
+
+    if (
+      messages.length > 0 ||
+      finalPrompt ||
+      isConversationComplete ||
+      input.trim()
+    ) {
+      console.log("Opening modal");
       setIsBackModalOpen(true);
       store.dispatch(clearProjects());
     } else {
-      console.log('Redirecting to dashboard');
-      router.push('/dashboard');
+      console.log("Redirecting to dashboard");
+      router.push("/dashboard");
     }
   };
 
   useEffect(() => {
-    // Handle browser back/forward buttons and manual URL changes
+    // Prevent navigation when in chatbot
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (messages.length > 1 || finalPrompt || isConversationComplete || input.trim()) {
-        e.preventDefault();
-        e.returnValue = '';
-        return '';
-      }
+      e.preventDefault();
+      e.returnValue = "";
     };
 
-    // Handle navigation attempts within the app
-    const handleNavigation = () => {
-      if (messages.length > 1 || finalPrompt || isConversationComplete || input.trim()) {
-        handleOut();
-        return false;
-      }
-      return true;
+    // Handle manual URL changes
+    const handlePopState = () => {
+      window.history.pushState(null, "", "/chatbot");
+      store.dispatch(clearProjects());
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('popstate', handleNavigation);
+    // Push initial state
+    window.history.pushState(null, "", "/chatbot");
 
-    // Intercept all link clicks
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const link = target.closest('a');
-      if (link && !link.hasAttribute('data-internal')) {
-        e.preventDefault();
-        handleOut();
-      }
-    };
-
-    document.addEventListener('click', handleClick);
+    // Add event listeners
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("popstate", handlePopState);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('popstate', handleNavigation);
-      document.removeEventListener('click', handleClick);
+      // Clean up event listeners
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
     };
-  }, [messages.length, finalPrompt, isConversationComplete, input]);
+  }, []);
 
   const handleRefresh = (e: BeforeUnloadEvent) => {
-    if (messages.length > 1 || finalPrompt || isConversationComplete || input.trim()) {
+    if (
+      messages.length > 1 ||
+      finalPrompt ||
+      isConversationComplete ||
+      input.trim()
+    ) {
       e.preventDefault();
-      e.returnValue = '';
-      return '';
+      e.returnValue = "";
+      return "";
     }
   };
 
   const handleCustomRefresh = () => {
-    if (messages.length > 1 || finalPrompt || isConversationComplete || input.trim()) {
+    if (
+      messages.length > 1 ||
+      finalPrompt ||
+      isConversationComplete ||
+      input.trim()
+    ) {
       setIsRefreshModalOpen(true);
     } else {
       window.location.reload();
     }
   };
 
+  const handleFileUpload = () => {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".pdf,.jpg,.jpeg,.png,.gif,.bmp,.tiff";
+    fileInput.onchange = (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      if (target.files && target.files[0]) {
+        setSelectedFile(target.files[0]);
+        console.log("File selected:", target.files[0].name);
+      }
+    };
+    fileInput.click();
+  };
 
+  const getFileIcon = (fileName: string) => {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    switch (extension) {
+      case 'pdf':
+        return <Image src={FilePdf} alt="pdf" className="w-10 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
+      case 'jpg':
+        return <Image src={ImageIcon} alt="jpg" className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
+      case 'jpeg':
+        return <Image src={ImageIcon} alt="jpg" className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
+      case 'png':
+        return <Image src={ImageIcon} alt="png" className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
+      case 'gif':
+        return <Image src={ImageIcon} alt="gif" className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
+      case 'bmp':
+        return <Image src={ImageIcon} alt="bmp" className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
+      case 'tiff':
+        return <Image src={ImageIcon} alt="tiff" className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
+      default:
+        return <Paperclip className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
+    }
+  };
 
   return (
     <main className="flex flex-col h-screen bg-[#1E1E1E]">
       <header className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
         <div className="flex items-center space-x-2">
           <div className="w-10 h-10 rounded-full overflow-hidden">
+            
             <Image
-              src="/assets/images/logocat.png"
+              src={Logo}
               alt="Website Design AI"
               width={40}
               height={40}
               className="object-cover"
             />
           </div>
-          <Link href="#" onClick={(e) => {
-            e.preventDefault();
-            handleOut();
-          }}>
+          <Link
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleOut();
+            }}
+          >
             <h1 className="text-white text-xl font-semibold">
-              Catmod <span className="text-orange-700 text-xl font-semibold">AI</span>
+              Catmod{" "}
+              <span className="text-orange-700 text-xl font-semibold">AI</span>
             </h1>
           </Link>
         </div>
@@ -227,10 +273,16 @@ export default function ChatbotPage() {
           disabled={!finalPrompt}
           onClick={handlePurduce}
         >
-          <span><Image src='/foot-print.svg' alt="foot-print"  className="object-cover"  width={30} height={30}></Image></span>
+          <span>
+            <Image
+              src={Foot}
+              alt="foot"
+              className="object-cover"
+              width={30}
+              height={30}
+            ></Image>
+          </span>
           <span>Pur-duce</span>
-
-
         </button>
       </header>
       <div
@@ -248,7 +300,7 @@ export default function ChatbotPage() {
               {message.role === "assistant" && (
                 <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                   <Image
-                    src="/assets/images/logocat.png"
+                    src={Logo}
                     alt="AI"
                     width={32}
                     height={32}
@@ -268,7 +320,7 @@ export default function ChatbotPage() {
               {message.role === "user" && (
                 <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                   <Image
-                    src="/images/images.png"
+                    src={UserIcon}
                     alt="User"
                     width={32}
                     height={32}
@@ -299,6 +351,22 @@ export default function ChatbotPage() {
         )}
       </div>
       <form onSubmit={handleSubmit} className="p-4 border-t border-gray-700">
+        {selectedFile && (
+          <div className="mb-2 p-2 bg-gray-700 rounded-lg flex items-center gap-2">
+            <span>{getFileIcon(selectedFile.name)}</span>
+            <span className="text-white text-sm truncate">{selectedFile.name}</span>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedFile(null);
+                console.log("File cleared");
+              }}
+              className="ml-auto text-gray-400 hover:text-white"
+            >
+              ×
+            </button>
+          </div>
+        )}
         <div className="flex items-center space-x-2">
           <div className="flex-1 relative">
             <input
@@ -310,9 +378,16 @@ export default function ChatbotPage() {
                   ? "Conversation complete - Click Pur-duce to continue"
                   : "Respond to the website design question"
               }
-              className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5722] placeholder-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full pl-10 pr-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5722] placeholder-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isConversationComplete}
             />
+            <button 
+              type="button"
+              className="absolute left-3 top-1/2 transform -translate-y-1/2"
+              onClick={handleFileUpload}
+            >
+              <Paperclip className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />
+            </button>
           </div>
           <button
             type="submit"
@@ -335,7 +410,7 @@ export default function ChatbotPage() {
           </button>
         </div>
       </form>
-      
+
       {isBackModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
           <div className="bg-[#1E1E1E] rounded-lg p-6 max-w-md w-full mx-4">
@@ -343,12 +418,13 @@ export default function ChatbotPage() {
               Leave Page?
             </h2>
             <p className="text-gray-300 mb-6">
-              Are you sure you want to leave? Your conversation progress will be lost.
+              Are you sure you want to leave? Your conversation progress will be
+              lost.
             </p>
             <div className="flex justify-end space-x-4">
               <button
                 onClick={() => {
-                  console.log('Cancel clicked');
+                  console.log("Cancel clicked");
                   setIsBackModalOpen(false);
                 }}
                 className="px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700"
@@ -357,9 +433,9 @@ export default function ChatbotPage() {
               </button>
               <button
                 onClick={() => {
-                  console.log('Leave clicked');
+                  console.log("Leave clicked");
                   setIsBackModalOpen(false);
-                  router.push('/dashboard');
+                  router.push("/dashboard");
                 }}
                 className="px-4 py-2 rounded-md bg-[#FF5722] text-white hover:bg-[#FF7043]"
               >
@@ -377,12 +453,13 @@ export default function ChatbotPage() {
               Refresh Page?
             </h2>
             <p className="text-gray-300 mb-6">
-              Are you sure you want to refresh? Your conversation progress will be lost.
+              Are you sure you want to refresh? Your conversation progress will
+              be lost.
             </p>
             <div className="flex justify-end space-x-4">
               <button
                 onClick={() => {
-                  console.log('Cancel refresh clicked');
+                  console.log("Cancel refresh clicked");
                   setIsRefreshModalOpen(false);
                 }}
                 className="px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700"

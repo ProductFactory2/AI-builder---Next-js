@@ -15,8 +15,12 @@ const projectSlice = createSlice({
     addProject: (state, action: PayloadAction<Project>) => {
       state.localProjects.push(action.payload);
     },
+    clearProjects: (state) => {
+      state.localProjects = [];
+    }
   },
+  
 });
 
-export const { addProject } = projectSlice.actions;
+export const { addProject, clearProjects } = projectSlice.actions;
 export default projectSlice.reducer;

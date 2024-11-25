@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { store } from '@/store/store';
-import Project from '@/models/project';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -41,11 +39,7 @@ export async function POST(req: Request) {
             stream: false,
         });
 
-        const project = await Project.create({
-            name: store.getState().projects.currentProject.name,
-            technologies: store.getState().projects.currentProject.technologies,
-            userId: store.getState().user.user.id
-        })
+        
         // Extract the response
         const response = completion.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
         return NextResponse.json({ response }, { status: 200 });
