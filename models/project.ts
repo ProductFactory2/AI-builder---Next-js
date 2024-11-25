@@ -17,9 +17,14 @@ const projectSchema = new Schema({
     finalPrompt: {
         type: String,
         required: true
+    },
+    referenceFile: {
+        fileName: String,
+        fileData: String,
+        fileType: String
     }
 }, {
-    timestamps: true  // Optional: adds createdAt and updatedAt fields
+    timestamps: true
 });
 
 const Project = models.Project || model("Project", projectSchema);

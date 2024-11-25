@@ -22,12 +22,14 @@ export async function middleware(request: NextRequest) {
     }
     return NextResponse.next()
   }
+  
   // if (pathname === '/chatbot') {
   //   if(store.getState().projects.localProjects.length === 0) {
   //     return NextResponse.redirect(new URL('/dashboard', request.url))
   //   }
   //   return NextResponse.next()
   // }
+  
   // Check if it's an auth page (login or signup)
   const isAuthPage = ['/login', '/signup'].includes(pathname)
   if (isAuthPage) {

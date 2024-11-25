@@ -16,13 +16,6 @@ interface Message {
   role: "user" | "assistant" | "system";
   content: string;
 }
-
-interface FileData {
-  fileName: string;
-  fileData: string;
-  fileType: string;
-}
-
 export default function ChatbotPage() {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -35,7 +28,7 @@ export default function ChatbotPage() {
   const [isRefreshModalOpen, setIsRefreshModalOpen] = useState(false);
   const { data: session } = useSession();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [fileData, setFileData] = useState<FileData | null>(null);
+  const [isLeavingPage, setIsLeavingPage] = useState(false);
   useEffect(() => {
     const initialMessage: Message = {
       role: "assistant",
@@ -50,12 +43,12 @@ export default function ChatbotPage() {
     }
   }, [messages]);
 
-  
   useEffect(()=>{
-    if(store.getState().projects.localProjects.length === 0){
+    const projects = store.getState().projects.localProjects;
+    if(projects.length === 0){
       router.push("/dashboard");
     }
-  },[]);
+  },[])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -120,18 +113,16 @@ export default function ChatbotPage() {
         store.getState().projects.localProjects[0].technologies;
       const userId = session.user.id;
 
-      const projectData = {
-        finalPrompt,
-        userId,
-        name,
-        technologies,
-        referenceFile: fileData // Include the file data if it exists
-      };
-
+      console.log(finalPrompt, userId, name, technologies);
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(projectData),
+        body: JSON.stringify({
+          finalPrompt,
+          userId,
+          name,
+          technologies,
+        }),
       });
 
       if (!response.ok) {
@@ -140,9 +131,10 @@ export default function ChatbotPage() {
       store.dispatch(clearProjects());
       const data = await response.json();
       console.log("Project created:", data);
-      router.push("/dashboard");
+      router.push("/dashboard"); // Redirect to dashboard after successful creation
     } catch (error) {
       console.error("Error creating project:", error);
+      // You might want to show an error message to the user here
     }
   };
 
@@ -166,16 +158,21 @@ export default function ChatbotPage() {
   };
 
   useEffect(() => {
-    // Prevent navigation when in chatbot
+    // Handle manual URL changes and refresh
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = "";
+      if (messages.length > 1 || finalPrompt || isConversationComplete || input.trim()) {
+        // Prevent the default alert and show our custom modal
+        e.preventDefault();
+        setIsRefreshModalOpen(true);
+        // Required for some browsers
+        e.returnValue = '';
+      }
     };
 
-    // Handle manual URL changes
+    // Handle browser back button
     const handlePopState = () => {
       window.history.pushState(null, "", "/chatbot");
-      store.dispatch(clearProjects());
+      setIsBackModalOpen(true);
     };
 
     // Push initial state
@@ -190,57 +187,34 @@ export default function ChatbotPage() {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       window.removeEventListener("popstate", handlePopState);
     };
-  }, []);
-
-  const handleRefresh = (e: BeforeUnloadEvent) => {
-    if (
-      messages.length > 1 ||
-      finalPrompt ||
-      isConversationComplete ||
-      input.trim()
-    ) {
-      e.preventDefault();
-      e.returnValue = "";
-      return "";
-    }
-  };
+  }, [messages, finalPrompt, isConversationComplete, input]);
 
   const handleCustomRefresh = () => {
-    if (
-      messages.length > 1 ||
-      finalPrompt ||
-      isConversationComplete ||
-      input.trim()
-    ) {
-      setIsRefreshModalOpen(true);
-    } else {
-      window.location.reload();
-    }
+    setIsLeavingPage(true);
+    setIsRefreshModalOpen(false);
+    window.location.reload();
   };
+
+  useEffect(() => {
+    if (isLeavingPage) {
+      // Clear any stored data or state here
+      store.dispatch(clearProjects());
+      setMessages([]);
+      setInput('');
+      setFinalPrompt(null);
+      setIsConversationComplete(false);
+    }
+  }, [isLeavingPage]);
 
   const handleFileUpload = () => {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = ".pdf,.jpg,.jpeg,.png,.gif,.bmp,.tiff";
-    fileInput.onchange = async (e: Event) => {
+    fileInput.onchange = (e: Event) => {
       const target = e.target as HTMLInputElement;
       if (target.files && target.files[0]) {
-        const file = target.files[0];
-        setSelectedFile(file);
-        
-        // Convert file to base64
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-          if (event.target?.result) {
-            const base64Data = event.target.result.toString().split(',')[1];
-            setFileData({
-              fileName: file.name,
-              fileData: base64Data,
-              fileType: file.type
-            });
-          }
-        };
-        reader.readAsDataURL(file);
+        setSelectedFile(target.files[0]);
+        console.log("File selected:", target.files[0].name);
       }
     };
     fileInput.click();
@@ -484,15 +458,12 @@ export default function ChatbotPage() {
               Refresh Page?
             </h2>
             <p className="text-gray-300 mb-6">
-              Are you sure you want to refresh? Your conversation progress will
-              be lost.
+              Are you sure you want to refresh? Your conversation progress and project creation details will
+              be lost. You need to start from the beginning.
             </p>
             <div className="flex justify-end space-x-4">
               <button
-                onClick={() => {
-                  console.log("Cancel refresh clicked");
-                  setIsRefreshModalOpen(false);
-                }}
+                onClick={() => setIsRefreshModalOpen(false)}
                 className="px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700"
               >
                 Cancel

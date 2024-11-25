@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { useEffect, useState } from "react";
-import { Search, ChevronDown, Plus, Zap, Pencil, Trash2, Code, X ,SquareTerminal} from 'lucide-react'
+import { Search, ChevronDown, Plus, Zap, Pencil, Trash2, Code, X ,SquareTerminal,View} from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux';
 import type {RootState} from '@/store/store';
 import { addProject } from '@/store/projectSlice';
@@ -16,6 +16,7 @@ interface Project {
   name: string
   technologies: string[]
   finalPrompt?: string
+  referenceFile?: string  
 }
 
 const Dialog = ({ open, onOpenChange, children }: { open: boolean; onOpenChange: (open: boolean) => void; children: React.ReactNode }) => {
@@ -165,6 +166,22 @@ export default function ProjectsPage() {
     setIsPromptModalOpen(true);
   };
 
+  const viewFile = async (projectId: string) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/file`);
+      if (response.status === 500) {
+       alert('File not found');
+        return;
+      }
+      if (!response.ok) throw new Error('Failed to fetch file');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error('Error viewing file:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#292929] p-6">
       <div className="mb-8 flex items-center justify-between">
@@ -224,6 +241,9 @@ export default function ProjectsPage() {
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button onClick={() => viewFile(project._id)} className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
+                  <View className="h-4 w-4 text-[#F05D23]" />
+                </button>
                 <button 
                   className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white"
                   onClick={() => openPromptModal(project)}
@@ -322,7 +342,7 @@ export default function ProjectsPage() {
             </button>
             <button
               onClick={handleConfirmDelete}
-              className="px-4 py-2 rounded bg-[#ff3d3d] text-white hover:bg-[#f01515]/90"
+              className="px-4 py-2 rounded bg-[#F05D23] text-white hover:bg-[#F05D23]/80"
             >
               Delete
             </button>
