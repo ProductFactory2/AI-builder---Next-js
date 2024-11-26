@@ -16,7 +16,6 @@ interface Message {
   role: "user" | "assistant" | "system";
   content: string;
 }
-<<<<<<< HEAD
 
 interface FileData {
   fileName: string;
@@ -24,8 +23,6 @@ interface FileData {
   fileType: string;
 }
 
-=======
->>>>>>> origin/preview_navigation_complete
 export default function ChatbotPage() {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
