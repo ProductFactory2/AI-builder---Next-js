@@ -1,7 +1,7 @@
 import { MongoClient, GridFSBucket } from "mongodb";
 import { Readable } from "stream";
-const mongoURI = "mongodb://localhost:27017";
-const databaseName = "ai-builder";
+const mongoURI = process.env.MONGODB_URI;
+const databaseName = process.env.DATABASE_NAME;
 export async function POST(req: Request) {
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method Not Allowed" }), { status: 405 });
@@ -12,10 +12,11 @@ export async function POST(req: Request) {
   try {
     await client.connect();
     const db = client.db(databaseName);
-    const bucket = new GridFSBucket(db, { bucketName: "projects" });
-    const templates = data[0];
+    const bucket = new GridFSBucket(db, { bucketName: "project-files" });
+    const templates = data;
     for (const templateKey of Object.keys(templates)) {
       const templateFiles = templates[templateKey];
+
       //process each file in the template
       for (const fileObj of templateFiles) {
         const fileName = Object.keys(fileObj)[0];
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
           readableStream.pipe(uploadStream)
             .on("finish", () => {
               console.log(`File "${filePath}" uploaded successfully`);
-              resolve();
+              resolve(true);
             })
             .on("Error", (error) => {
               console.log(`Error uploading files "${filePath}":`, error);

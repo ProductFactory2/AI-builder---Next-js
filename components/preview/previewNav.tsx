@@ -2,10 +2,6 @@
 
 import { Laptop, Smartphone, Tablet, ArrowLeft, ChevronDown } from 'lucide-react'
 import Image from "next/image"
-<<<<<<< HEAD
-=======
-import { useState } from "react"
->>>>>>> origin/M-userauth-functionalities
 import logo from '@/public/assets/images/logo.png'
 import { usePreviewStore } from './previewDisplay'
 import {
@@ -21,7 +17,6 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function PreviewNav() {
-<<<<<<< HEAD
   
   const { selectedDevice, selectedTemplate, setSelectedDevice, setSelectedTemplate } = usePreviewStore();
 
@@ -37,15 +32,6 @@ export default function PreviewNav() {
     'template2': 'Template 2',
     'template3': 'Template 3'
   } as const;
-=======
-  const { selectedDevice, setSelectedDevice } = usePreviewStore();
-  const [selectedTemplate, setSelectedTemplate] = useState('Template 01')
-
-  const handleConfirm = () => {
-    // Add your confirmation logic here
-    console.log('Template confirmed:', selectedTemplate);
-  };
->>>>>>> origin/M-userauth-functionalities
 
   return (
     <div className="flex h-16 items-center justify-between bg-zinc-900 px-4">
@@ -61,7 +47,6 @@ export default function PreviewNav() {
           <button
             className="flex items-center justify-between w-[180px] px-3 py-2 text-white bg-transparent border border-orange-500 rounded-md"
           >
-<<<<<<< HEAD
             <span>{displayMapping[selectedTemplate]}</span>
             <ChevronDown className="h-4 w-4 text-orange-500" />
           </button>
@@ -73,19 +58,6 @@ export default function PreviewNav() {
                 onClick={() => setSelectedTemplate(value)}
               >
                 {display}
-=======
-            <span>{selectedTemplate}</span>
-            <ChevronDown className="h-4 w-4 text-orange-500" />
-          </button>
-          <div className="absolute top-full left-0 w-[180px] bg-zinc-800 border border-zinc-700 rounded-md shadow-lg hidden group-hover:block">
-            {['Template 01', 'Template 02', 'Template 03'].map((template) => (
-              <button
-                key={template}
-                className="block w-full px-3 py-2 text-left text-white hover:bg-zinc-700"
-                onClick={() => setSelectedTemplate(template)}
-              >
-                {template}
->>>>>>> origin/M-userauth-functionalities
               </button>
             ))}
           </div>
@@ -126,11 +98,7 @@ export default function PreviewNav() {
               <AlertDialogCancel>
                 Cancel
               </AlertDialogCancel>
-<<<<<<< HEAD
               <AlertDialogAction>
-=======
-              <AlertDialogAction onClick={handleConfirm}>
->>>>>>> origin/M-userauth-functionalities
                 Confirm
               </AlertDialogAction>
             </AlertDialogFooter>

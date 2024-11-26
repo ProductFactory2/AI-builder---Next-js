@@ -12,6 +12,7 @@ import UserIcon from "@/public/images/images.png";
 import { Paperclip, File } from "lucide-react";
 import ImageIcon from "@/public/images/img.png";
 import FilePdf from "@/public/images/pdf.png";
+import generateHtml from "@/utils/html-genarate";
 interface Message {
   role: "user" | "assistant" | "system";
   content: string;
@@ -35,6 +36,7 @@ export default function ChatbotPage() {
   const [isRefreshModalOpen, setIsRefreshModalOpen] = useState(false);
   const { data: session } = useSession();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileData, setFileData] = useState<FileData | null>(null);
   useEffect(()=>{
     if(store.getState().projects.localProjects.length === 0){
       router.push("/dashboard");
@@ -136,7 +138,8 @@ export default function ChatbotPage() {
       store.dispatch(clearProjects());
       const data = await response.json();
       console.log("Project created:", data);
-      router.push("/dashboard");
+      await generateHtml(userId,name,finalPrompt)
+      router.push("/preview");
     } catch (error) {
       console.error("Error creating project:", error);
     }

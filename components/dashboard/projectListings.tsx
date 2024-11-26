@@ -2,9 +2,9 @@
 
 import * as React from 'react'
 import { useEffect, useState } from "react";
-import { Search, ChevronDown, Plus, Zap, Pencil, Trash2, Code, X ,SquareTerminal,View} from 'lucide-react'
+import { Search, ChevronDown, Plus, Zap, Pencil, Trash2, Code, X, SquareTerminal, View, File } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux';
-import type {RootState} from '@/store/store';
+import type { RootState } from '@/store/store';
 import { addProject } from '@/store/projectSlice';
 import { useRouter } from 'next/navigation';
 import Image from "next/image"
@@ -16,7 +16,7 @@ interface Project {
   name: string
   technologies: string[]
   finalPrompt?: string
-  referenceFile?: string  
+  referenceFile?: string
 }
 
 const Dialog = ({ open, onOpenChange, children }: { open: boolean; onOpenChange: (open: boolean) => void; children: React.ReactNode }) => {
@@ -39,7 +39,7 @@ export default function ProjectsPage() {
   const [projects, setProjects] = React.useState<Project[]>([])
   const [newProjectName, setNewProjectName] = useState('');
   const [selectedTech, setSelectedTech] = useState<string[]>([]);
-  const [deleteConfirmation, setDeleteConfirmation] = React.useState<{open: boolean, projectId: string | null}>({
+  const [deleteConfirmation, setDeleteConfirmation] = React.useState<{ open: boolean, projectId: string | null }>({
     open: false,
     projectId: null
   });
@@ -57,7 +57,7 @@ export default function ProjectsPage() {
   }, [session]);
 
   // Fetch projects from the server
-  const fetchProjects = async() => {
+  const fetchProjects = async () => {
     if (!session?.user?.id) return;
     try {
       const response = await fetch(`/api/projects?userId=${session.user.id}`);
@@ -70,14 +70,14 @@ export default function ProjectsPage() {
   }
 
   // Delete a project from the server
-  const deleteProject = async(id: string) => {
+  const deleteProject = async (id: string) => {
     try {
       const response = await fetch(`/api/projects/${id}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) throw new Error('Failed to delete project');
-      
+
       // Only update state if delete was successful
       setProjects((prevProjects) => prevProjects.filter(project => project._id !== id));
       setDeleteConfirmation({ open: false, projectId: null });
@@ -90,23 +90,23 @@ export default function ProjectsPage() {
   const allProjects = [...projects, ...localProjects];
   const filteredProjects = allProjects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     // Updated filter logic
     const matchesTech = (() => {
       switch (filterType) {
         case 'all':
           return true;
         case 'react-tailwind':
-          return project.technologies.includes('ReactJS') && 
-                 project.technologies.includes('Tailwind CSS');
+          return project.technologies.includes('ReactJS') &&
+            project.technologies.includes('Tailwind CSS');
         case 'html-tailwind':
-          return project.technologies.includes('HTML') && 
-                 project.technologies.includes('Tailwind CSS');
+          return project.technologies.includes('HTML') &&
+            project.technologies.includes('Tailwind CSS');
         default:
           return true;
       }
     })();
-    
+
     return matchesSearch && matchesTech;
   });
 
@@ -145,7 +145,7 @@ export default function ProjectsPage() {
   // Update the filter button UI
   const filterButton = (
     <div className="relative">
-      <button 
+      <button
         className="flex h-10 items-center gap-2 rounded-md bg-[#1E1E1E] px-4 text-white hover:bg-[#2A2A2A]"
         onClick={() => setIsFilterOpen(!isFilterOpen)}
       >
@@ -184,7 +184,7 @@ export default function ProjectsPage() {
     try {
       const response = await fetch(`/api/projects/${projectId}/file`);
       if (response.status === 500) {
-       alert('File not found');
+        alert('File not found');
         return;
       }
       if (!response.ok) throw new Error('Failed to fetch file');
@@ -212,6 +212,7 @@ export default function ProjectsPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-10 rounded-md bg-[#1E1E1E] pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF5722]"
           />
+          {searchQuery && <X onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 cursor-pointer" />}
         </div>
 
         <div className="flex w-full sm:w-auto items-center gap-4">
@@ -240,7 +241,7 @@ export default function ProjectsPage() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
                 <h3 className="text-lg font-medium text-white">{project.name}</h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  {project.technologies.map((tech:any) => (
+                  {project.technologies.map((tech: any) => (
                     <div
                       key={tech}
                       className="flex items-center gap-1 rounded bg-[#1C1C1C] px-2 py-1 text-sm text-gray-400"
@@ -255,24 +256,24 @@ export default function ProjectsPage() {
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                <button onClick={() => viewFile(project._id)} className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
-                  <View className="h-4 w-4 text-[#F05D23]" />
-                </button>
-                <button 
+                {project.referenceFile && <button onClick={() => viewFile(project._id)} className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
+                  <File className="h-4 w-4 text-[#F05D23]" />
+                </button>}
+                <button
                   className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white"
                   onClick={() => openPromptModal(project)}
                 >
                   <SquareTerminal className="h-4 w-4 text-[#F05D23]" />
                 </button>
                 <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
-                  <Zap className="h-4 w-4 text-[#F05D23]"  />
+                  <View className="h-4 w-4 text-[#F05D23]" />
                 </button>
                 <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
                   <Pencil className="h-4 w-4 text-[#F05D23] " />
                 </button>
                 <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
-                  <Trash2 
-                    className="h-4 w-4 text-[#F05D23]" 
+                  <Trash2
+                    className="h-4 w-4 text-[#F05D23]"
                     onClick={() => handleDeleteClick(project._id)}
                   />
                 </button>
@@ -280,10 +281,10 @@ export default function ProjectsPage() {
             </div>
           ))}
         </div>
-        
+
       )}
 
-<Dialog open={isPromptModalOpen} onOpenChange={setIsPromptModalOpen}>
+      <Dialog open={isPromptModalOpen} onOpenChange={setIsPromptModalOpen}>
         <div className="space-y-4">
           <h2 className="text-center text-white text-2xl font-semibold">Project Prompt</h2>
           <div>
@@ -310,24 +311,33 @@ export default function ProjectsPage() {
           </div>
           <div className="space-y-2">
             <div className="text-white mb-2">Select Technologies:</div>
-            <div className="space-x-2">
-              <button
-                onClick={() => setSelectedTech(['ReactJS', 'Tailwind CSS'])}
-                className={`px-4 py-2 rounded ${
-                  selectedTech.join(',') === 'ReactJS,Tailwind CSS' 
-                    ? 'bg-[#F05D23] text-white' 
+            <div className="flex space-x-2 ">
+
+              <div className='relative group'>
+                <button
+                  disabled={true}
+                  onClick={() => setSelectedTech(['ReactJS', 'Tailwind CSS'])}
+                  className={`pl-4 pr-2 py-2 rounded cursor-not-allowed after:content-['Coming Soon']  ${selectedTech.join(',') === 'ReactJS,Tailwind CSS'
+                    ? 'bg-[#F05D23] text-white'
                     : 'bg-[#2A2A2A] text-gray-400'
-                }`}
-              >
-                ReactJS & Tailwind CSS
-              </button>
+                    }`}
+                >
+                  ReactJS & Tailwind CSS
+                </button>
+                <span
+                  className="absolute hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 
+               mb-2 px-3 py-1 text-sm bg-gray-800 text-white rounded-md whitespace-nowrap"
+                >
+                  Coming Soon!
+                </span>
+
+              </div>
               <button
                 onClick={() => setSelectedTech(['HTML', 'Tailwind CSS'])}
-                className={`px-4 py-2 rounded ${
-                  selectedTech.join(',') === 'HTML,Tailwind CSS' 
-                    ? 'bg-[#F05D23] text-white' 
-                    : 'bg-[#2A2A2A] text-gray-400'
-                }`}
+                className={`pl-4 pr-2 py-2 rounded ${selectedTech.join(',') === 'HTML,Tailwind CSS'
+                  ? 'bg-[#F05D23] text-white'
+                  : 'bg-[#2A2A2A] text-gray-400'
+                  }`}
               >
                 HTML & Tailwind CSS
               </button>
@@ -363,7 +373,7 @@ export default function ProjectsPage() {
           </div>
         </div>
       </Dialog>
-      
+
     </div>
   )
 }
