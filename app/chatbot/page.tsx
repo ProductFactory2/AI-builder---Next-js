@@ -38,10 +38,6 @@ export default function ChatbotPage() {
   const [isRefreshModalOpen, setIsRefreshModalOpen] = useState(false);
   const { data: session } = useSession();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-<<<<<<< HEAD
-  const [fileData, setFileData] = useState<FileData | null>(null);
-=======
->>>>>>> origin/preview_navigation_complete
   useEffect(() => {
     const initialMessage: Message = {
       role: "assistant",
@@ -55,17 +51,6 @@ export default function ChatbotPage() {
         chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
-<<<<<<< HEAD
-
-  
-  useEffect(()=>{
-    if(store.getState().projects.localProjects.length === 0){
-      router.push("/dashboard");
-    }
-  },[]);
-
-=======
->>>>>>> origin/preview_navigation_complete
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!input.trim() || isLoading || isConversationComplete) return;
