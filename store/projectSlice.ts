@@ -15,6 +15,7 @@ const projectSlice = createSlice({
     addProject: (state, action: PayloadAction<Project>) => {
       state.localProjects.push(action.payload);
     },
+<<<<<<< HEAD
     clearProjects: (state) => {
       state.localProjects = [];
     }
@@ -23,4 +24,10 @@ const projectSlice = createSlice({
 });
 
 export const { addProject, clearProjects } = projectSlice.actions;
+=======
+  },
+});
+
+export const { addProject } = projectSlice.actions;
+>>>>>>> origin/M-userauth-functionalities
 export default projectSlice.reducer;

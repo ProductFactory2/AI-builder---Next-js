@@ -13,6 +13,7 @@ const projectSchema = new Schema({
         type: Types.ObjectId,
         ref: 'User',
         required: true
+<<<<<<< HEAD
     },
     finalPrompt: {
         type: String,
@@ -27,6 +28,12 @@ const projectSchema = new Schema({
     timestamps: true
     }
 );
+=======
+    }
+}, {
+    timestamps: true  // Optional: adds createdAt and updatedAt fields
+});
+>>>>>>> origin/M-userauth-functionalities
 
 const Project = models.Project || model("Project", projectSchema);
 

@@ -1,5 +1,9 @@
 import Project from '@/models/project'
+<<<<<<< HEAD
 import connectMongoDB from '@/lib/mongodb'
+=======
+import connectMangoDB from '@/lib/mongodb'
+>>>>>>> origin/M-userauth-functionalities
 
 export const GET = async(request: Request) => {
   try {
@@ -10,7 +14,11 @@ export const GET = async(request: Request) => {
       return new Response('Unauthorized', { status: 401 });
     }
 
+<<<<<<< HEAD
     await connectMongoDB();
+=======
+    await connectMangoDB();
+>>>>>>> origin/M-userauth-functionalities
     const projects = await Project.find({ userId: userId });
     return new Response(JSON.stringify(projects), {
       status: 200,
@@ -23,8 +31,13 @@ export const GET = async(request: Request) => {
 
 export async function POST(request: Request) {
   try {
+<<<<<<< HEAD
     await connectMongoDB();
     const { name, technologies, userId, finalPrompt, referenceFile } = await request.json();
+=======
+    await connectMangoDB();
+    const { name, technologies, userId } = await request.json();
+>>>>>>> origin/M-userauth-functionalities
     
     if (!userId) {
       return new Response('Unauthorized', { status: 401 });

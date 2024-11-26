@@ -1,28 +1,28 @@
-import connectDB from '@/lib/mongodb'
 import { NextResponse } from 'next/server'
+import connectDB from '@/lib/mongodb'
+import User from '@/models/User'
 
 export async function POST(req: Request) {
   try {
+    await connectDB()
     const { email } = await req.json()
-    const { db } = await connectDB()
-    
-    if (!db) {
-      console.error('Database connection failed')
-      return NextResponse.json(
-        { error: 'Database connection failed' },
-        { status: 500 }
-      )
+
+    const user = await User.findOne({ email })
+
+    if (!user) {
+      return NextResponse.json({ exists: false })
     }
 
-    const existingUser = await db.collection('users').findOne({ email })
-
     return NextResponse.json({
-      exists: !!existingUser
+      exists: true,
+      isVerified: user.isVerified,
+      authProvider: user.authProvider,
+      hasGoogleId: !!user.googleId
     })
   } catch (error) {
-    console.error('Check user error:', error)
+    console.error('Check User Error:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to check user existence' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
