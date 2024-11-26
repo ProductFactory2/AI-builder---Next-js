@@ -2,7 +2,6 @@
 
 import { Laptop, Smartphone, Tablet, ArrowLeft, ChevronDown } from 'lucide-react'
 import Image from "next/image"
-import { useState } from "react"
 import logo from '@/public/assets/images/logo.png'
 import { usePreviewStore } from './previewDisplay'
 import {
@@ -18,13 +17,21 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function PreviewNav() {
-  const { selectedDevice, setSelectedDevice } = usePreviewStore();
-  const [selectedTemplate, setSelectedTemplate] = useState('Template 01')
+  
+  const { selectedDevice, selectedTemplate, setSelectedDevice, setSelectedTemplate } = usePreviewStore();
 
-  const handleConfirm = () => {
-    // Add your confirmation logic here
-    console.log('Template confirmed:', selectedTemplate);
-  };
+  //Template maping
+  const templateMapping = {
+    'Template 1' : 'template1',
+    'Template 2' : 'template2',
+    'Template 3' : 'template3'
+  } as const;
+
+  const displayMapping = {
+    'template1': 'Template 1',
+    'template2': 'Template 2',
+    'template3': 'Template 3'
+  } as const;
 
   return (
     <div className="flex h-16 items-center justify-between bg-zinc-900 px-4">
@@ -40,17 +47,17 @@ export default function PreviewNav() {
           <button
             className="flex items-center justify-between w-[180px] px-3 py-2 text-white bg-transparent border border-orange-500 rounded-md"
           >
-            <span>{selectedTemplate}</span>
+            <span>{displayMapping[selectedTemplate]}</span>
             <ChevronDown className="h-4 w-4 text-orange-500" />
           </button>
           <div className="absolute top-full left-0 w-[180px] bg-zinc-800 border border-zinc-700 rounded-md shadow-lg hidden group-hover:block">
-            {['Template 01', 'Template 02', 'Template 03'].map((template) => (
+            {Object.entries(templateMapping).map(([display, value]) => (
               <button
-                key={template}
+                key={value}
                 className="block w-full px-3 py-2 text-left text-white hover:bg-zinc-700"
-                onClick={() => setSelectedTemplate(template)}
+                onClick={() => setSelectedTemplate(value)}
               >
-                {template}
+                {display}
               </button>
             ))}
           </div>
@@ -91,7 +98,7 @@ export default function PreviewNav() {
               <AlertDialogCancel>
                 Cancel
               </AlertDialogCancel>
-              <AlertDialogAction onClick={handleConfirm}>
+              <AlertDialogAction>
                 Confirm
               </AlertDialogAction>
             </AlertDialogFooter>

@@ -16,6 +16,7 @@ interface Message {
   role: "user" | "assistant" | "system";
   content: string;
 }
+<<<<<<< HEAD
 
 interface FileData {
   fileName: string;
@@ -23,6 +24,8 @@ interface FileData {
   fileType: string;
 }
 
+=======
+>>>>>>> origin/preview_navigation_complete
 export default function ChatbotPage() {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -35,7 +38,10 @@ export default function ChatbotPage() {
   const [isRefreshModalOpen, setIsRefreshModalOpen] = useState(false);
   const { data: session } = useSession();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+<<<<<<< HEAD
   const [fileData, setFileData] = useState<FileData | null>(null);
+=======
+>>>>>>> origin/preview_navigation_complete
   useEffect(() => {
     const initialMessage: Message = {
       role: "assistant",
@@ -49,6 +55,7 @@ export default function ChatbotPage() {
         chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
+<<<<<<< HEAD
 
   
   useEffect(()=>{
@@ -57,6 +64,8 @@ export default function ChatbotPage() {
     }
   },[]);
 
+=======
+>>>>>>> origin/preview_navigation_complete
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!input.trim() || isLoading || isConversationComplete) return;

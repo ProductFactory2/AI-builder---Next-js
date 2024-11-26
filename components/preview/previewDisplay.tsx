@@ -6,12 +6,22 @@ import { create } from 'zustand';
 // Create a store to share state between components
 interface PreviewStore {
   selectedDevice: 'desktop' | 'tablet' | 'mobile';
+  selectedTemplate: 'template1' | 'template2' | 'template3',
+  userId: string | null;
+  projectName: string | null;
   setSelectedDevice: (device: 'desktop' | 'tablet' | 'mobile') => void;
+  setSelectedTemplate: (template: 'template1' | 'template2' | 'template3') => void
+  setProjectInfo: (userId: string, projectName: string) => void;
 }
 
 export const usePreviewStore = create<PreviewStore>((set) => ({
   selectedDevice: 'desktop',
+  selectedTemplate: 'template1',
+  userId: null,
+  projectName: null,
   setSelectedDevice: (device) => set({ selectedDevice: device }),
+  setSelectedTemplate: (template) => set({ selectedTemplate: template}),
+  setProjectInfo: (userId, projectName) => set({ userId, projectName}),
 }));
 
 const deviceDimensions = {
@@ -21,7 +31,9 @@ const deviceDimensions = {
 };
 
 export default function PreviewDisplay() {
-  const selectedDevice = usePreviewStore((state) => state.selectedDevice);
+  const {selectedDevice, selectedTemplate, userId, projectName} = usePreviewStore();
+  
+  const previewUrl = userId && projectName ? `api/preview/${userId}/${projectName}/${selectedTemplate}/index.html`: '';
   
   return (
     <div className="flex justify-center bg-zinc-800 min-h-[calc(100vh-64px)] p-4">
@@ -35,7 +47,7 @@ export default function PreviewDisplay() {
         }}
       >
         <iframe
-          src="/preview-content"
+          src={previewUrl}
           className="w-full h-full border-0"
           title="Preview Content"
         />

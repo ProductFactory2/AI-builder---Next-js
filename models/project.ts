@@ -25,7 +25,8 @@ const projectSchema = new Schema({
     }
 }, {
     timestamps: true
-});
+    }
+);
 
 const Project = models.Project || model("Project", projectSchema);
 
