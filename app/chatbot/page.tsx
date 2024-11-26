@@ -35,6 +35,11 @@ export default function ChatbotPage() {
   const [isRefreshModalOpen, setIsRefreshModalOpen] = useState(false);
   const { data: session } = useSession();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  useEffect(()=>{
+    if(store.getState().projects.localProjects.length === 0){
+      router.push("/dashboard");
+    }
+  },[]);
   useEffect(() => {
     const initialMessage: Message = {
       role: "assistant",

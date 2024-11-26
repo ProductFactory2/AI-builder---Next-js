@@ -2,11 +2,7 @@
 
 import * as React from 'react'
 import { useEffect, useState } from "react";
-<<<<<<< HEAD
 import { Search, ChevronDown, Plus, Zap, Pencil, Trash2, Code, X ,SquareTerminal,View} from 'lucide-react'
-=======
-import { Search, ChevronDown, Plus, Zap, Pencil, Trash2, Code, X } from 'lucide-react'
->>>>>>> origin/M-userauth-functionalities
 import { useDispatch, useSelector } from 'react-redux';
 import type {RootState} from '@/store/store';
 import { addProject } from '@/store/projectSlice';
@@ -19,22 +15,15 @@ interface Project {
   _id: string
   name: string
   technologies: string[]
-<<<<<<< HEAD
   finalPrompt?: string
   referenceFile?: string  
-=======
->>>>>>> origin/M-userauth-functionalities
 }
 
 const Dialog = ({ open, onOpenChange, children }: { open: boolean; onOpenChange: (open: boolean) => void; children: React.ReactNode }) => {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-<<<<<<< HEAD
       <div className="relative w-[95%] sm:w-full max-w-md rounded-lg bg-[#1C1C1C] p-6">
-=======
-      <div className="relative w-full max-w-md rounded-lg bg-[#1C1C1C] p-6">
->>>>>>> origin/M-userauth-functionalities
         <button onClick={() => onOpenChange(false)} className="absolute right-4 top-4 text-gray-400 hover:text-white">
           <X className="h-6 w-6" />
         </button>
@@ -60,12 +49,8 @@ export default function ProjectsPage() {
   const { data: session } = useSession()
   const [filterType, setFilterType] = useState<string>('all');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-<<<<<<< HEAD
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
   const [selectedProjectPrompt, setSelectedProjectPrompt] = useState<string>('');
-=======
-
->>>>>>> origin/M-userauth-functionalities
   // Fetch projects from the server
   useEffect(() => {
     fetchProjects();
@@ -105,7 +90,6 @@ export default function ProjectsPage() {
   const allProjects = [...projects, ...localProjects];
   const filteredProjects = allProjects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase());
-<<<<<<< HEAD
     
     // Updated filter logic
     const matchesTech = (() => {
@@ -122,13 +106,6 @@ export default function ProjectsPage() {
           return true;
       }
     })();
-=======
-    const matchesTech = filterType === 'all' 
-      ? true 
-      : filterType === 'html-react'
-        ? project.technologies.includes('HTML') && project.technologies.includes('ReactJS')
-        : project.technologies.includes('HTML') && project.technologies.includes('Tailwind CSS');
->>>>>>> origin/M-userauth-functionalities
     
     return matchesSearch && matchesTech;
   });
@@ -158,7 +135,6 @@ export default function ProjectsPage() {
     }
   };
 
-<<<<<<< HEAD
   // Update the filter options
   const filterOptions = [
     { label: 'All projects', value: 'all' },
@@ -176,41 +152,16 @@ export default function ProjectsPage() {
         <span className="text-sm">
           {filterOptions.find(option => option.value === filterType)?.label || 'All projects'}
         </span>
-=======
-  // Add filter options
-  const filterOptions = [
-    { label: 'All projects', value: 'all' },
-    { label: 'HTML & ReactJS', value: 'html-react' },
-    { label: 'HTML & Tailwind', value: 'html-tailwind' },
-  ];
-
-  // Replace the existing filter button with this dropdown
-  const filterButton = (
-    <div className="relative">
-      <button 
-        className="flex h-10 items-center gap-2 rounded-md bg-[#1E1E1E] px-4 text-white"
-        onClick={() => setIsFilterOpen(!isFilterOpen)}
-      >
-        {filterOptions.find(option => option.value === filterType)?.label}
->>>>>>> origin/M-userauth-functionalities
         <ChevronDown className="h-4 w-4 text-[#F05D23]" />
       </button>
 
       {isFilterOpen && (
-<<<<<<< HEAD
         <div className="absolute right-0 mt-2 w-56 rounded-md bg-[#1E1E1E] py-1 shadow-lg z-10 border border-[#2A2A2A]">
           {filterOptions.map((option) => (
             <button
               key={option.value}
               className={`block w-full px-4 py-2 text-left text-sm hover:bg-[#2A2A2A] transition-colors
                 ${filterType === option.value ? 'text-[#F05D23]' : 'text-white'}`}
-=======
-        <div className="absolute right-0 mt-2 w-48 rounded-md bg-[#1E1E1E] py-1 shadow-lg">
-          {filterOptions.map((option) => (
-            <button
-              key={option.value}
-              className="block w-full px-4 py-2 text-left text-white hover:bg-[#2A2A2A]"
->>>>>>> origin/M-userauth-functionalities
               onClick={() => {
                 setFilterType(option.value);
                 setIsFilterOpen(false);
@@ -224,7 +175,6 @@ export default function ProjectsPage() {
     </div>
   );
 
-<<<<<<< HEAD
   const openPromptModal = (project: Project) => {
     setSelectedProjectPrompt(project.finalPrompt || '');
     setIsPromptModalOpen(true);
@@ -246,28 +196,20 @@ export default function ProjectsPage() {
     }
   };
 
-=======
->>>>>>> origin/M-userauth-functionalities
   return (
     <div className="min-h-screen bg-[#292929] p-6">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-white">Your Projects</h1>
       </div>
 
-<<<<<<< HEAD
       <div className="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:flex-1">
-=======
-      <div className="mb-8 flex items-center justify-between gap-4">
-        <div className="relative flex-1">
->>>>>>> origin/M-userauth-functionalities
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Search your project"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-<<<<<<< HEAD
             className="w-full h-10 rounded-md bg-[#1E1E1E] pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF5722]"
           />
         </div>
@@ -280,21 +222,6 @@ export default function ProjectsPage() {
           >
             {/* <Plus className="h-4 w-4" /> */}
             + Create
-=======
-            className="h-10 rounded-md bg-[#1E1E1E] pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF5722] max-w-7xl"
-          />
-        </div>
-
-        <div className="flex items-center gap-4">
-          {filterButton}
-
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="flex h-10 items-center gap-2 rounded-md bg-[#F05D23] px-4 text-white hover:bg-[#F05D23]/90 shadow-lg shadow-orange-400/50"
-          >
-            <Plus className="h-4 w-4" />
-            Create
->>>>>>> origin/M-userauth-functionalities
           </button>
         </div>
       </div>
@@ -308,19 +235,11 @@ export default function ProjectsPage() {
           {filteredProjects.map((project) => (
             <div
               key={project._id}
-<<<<<<< HEAD
               className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border border-[#FF5722]/10 bg-[#1E1E1E] p-5 hover:border-[#FF5722]/50 gap-4"
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
                 <h3 className="text-lg font-medium text-white">{project.name}</h3>
                 <div className="flex flex-wrap items-center gap-2">
-=======
-              className="flex items-center justify-between rounded-lg border border-[#FF5722]/10 bg-[#1E1E1E] p-5 hover:border-[#FF5722]/50"
-            >
-              <div className="flex items-center gap-4">
-                <h3 className="text-lg font-medium text-white">{project.name}</h3>
-                <div className="flex items-center gap-2">
->>>>>>> origin/M-userauth-functionalities
                   {project.technologies.map((tech:any) => (
                     <div
                       key={tech}
@@ -335,7 +254,6 @@ export default function ProjectsPage() {
                 </div>
               </div>
 
-<<<<<<< HEAD
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                 <button onClick={() => viewFile(project._id)} className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
                   <View className="h-4 w-4 text-[#F05D23]" />
@@ -346,9 +264,6 @@ export default function ProjectsPage() {
                 >
                   <SquareTerminal className="h-4 w-4 text-[#F05D23]" />
                 </button>
-=======
-              <div className="flex items-center gap-2">
->>>>>>> origin/M-userauth-functionalities
                 <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
                   <Zap className="h-4 w-4 text-[#F05D23]"  />
                 </button>
@@ -365,7 +280,6 @@ export default function ProjectsPage() {
             </div>
           ))}
         </div>
-<<<<<<< HEAD
         
       )}
 
@@ -382,10 +296,6 @@ export default function ProjectsPage() {
         </div>
       </Dialog>
 
-=======
-      )}
-
->>>>>>> origin/M-userauth-functionalities
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <div className="space-y-4">
           <h2 className="text-center text-white text-2xl font-semibold">To a new beginning</h2>
@@ -402,24 +312,14 @@ export default function ProjectsPage() {
             <div className="text-white mb-2">Select Technologies:</div>
             <div className="space-x-2">
               <button
-<<<<<<< HEAD
                 onClick={() => setSelectedTech(['ReactJS', 'Tailwind CSS'])}
                 className={`px-4 py-2 rounded ${
                   selectedTech.join(',') === 'ReactJS,Tailwind CSS' 
-=======
-                onClick={() => setSelectedTech(['HTML', 'ReactJS'])}
-                className={`px-4 py-2 rounded ${
-                  selectedTech.join(',') === 'HTML,ReactJS' 
->>>>>>> origin/M-userauth-functionalities
                     ? 'bg-[#F05D23] text-white' 
                     : 'bg-[#2A2A2A] text-gray-400'
                 }`}
               >
-<<<<<<< HEAD
                 ReactJS & Tailwind CSS
-=======
-                HTML & ReactJS
->>>>>>> origin/M-userauth-functionalities
               </button>
               <button
                 onClick={() => setSelectedTech(['HTML', 'Tailwind CSS'])}
@@ -456,21 +356,14 @@ export default function ProjectsPage() {
             </button>
             <button
               onClick={handleConfirmDelete}
-<<<<<<< HEAD
               className="px-4 py-2 rounded bg-[#F05D23] text-white hover:bg-[#F05D23]/80"
-=======
-              className="px-4 py-2 rounded bg-[#ff3d3d] text-white hover:bg-[#f01515]/90"
->>>>>>> origin/M-userauth-functionalities
             >
               Delete
             </button>
           </div>
         </div>
       </Dialog>
-<<<<<<< HEAD
       
-=======
->>>>>>> origin/M-userauth-functionalities
     </div>
   )
 }

@@ -22,10 +22,6 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
         <Button
           type="button"
           variant="outline"
-<<<<<<< HEAD
-          size="icon"
-=======
->>>>>>> origin/M-userauth-functionalities
           className="absolute right-2 top-1/2 h-7 w-7 -translate-y-1/2 border-none bg-transparent hover:bg-transparent"
           onClick={() => setShowPassword(!showPassword)}
         >

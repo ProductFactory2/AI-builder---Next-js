@@ -18,10 +18,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "crypto": "^1.0.1",
-<<<<<<< HEAD
     "framer-motion": "^11.11.17",
-=======
->>>>>>> origin/M-userauth-functionalities
     "groq-sdk": "^0.8.0",
     "lucide-react": "^0.460.0",
     "mongoose": "^8.8.1",

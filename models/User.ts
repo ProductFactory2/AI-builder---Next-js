@@ -1,16 +1,8 @@
-<<<<<<< HEAD
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema({
-=======
-import mongoose, { Schema } from "mongoose";
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
-
-const userSchema = new Schema({
->>>>>>> origin/M-userauth-functionalities
   email: {
     type: String,
     required: [true, 'Please provide an email'],
@@ -20,15 +12,10 @@ const userSchema = new Schema({
   },
   password: {
     type: String,
-<<<<<<< HEAD
-    required: [function(this: any) { return this.authProvider === 'local'; }, 'Password is required for local auth'],
-    minlength: [6, 'Password should be at least 6 characters'],
-=======
     required: [function(this: any) { 
       return this.authProvider.includes('local'); 
     }, 'Password is required for local auth'],
     select: false
->>>>>>> origin/M-userauth-functionalities
   },
   googleId: {
     type: String,
@@ -37,11 +24,7 @@ const userSchema = new Schema({
   },
   authProvider: {
     type: String,
-<<<<<<< HEAD
-    enum: ['local', 'google'],
-=======
     enum: ['local', 'google', 'local and google'],
->>>>>>> origin/M-userauth-functionalities
     default: 'local'
   },
   isVerified: {
@@ -52,11 +35,6 @@ const userSchema = new Schema({
     code: String,
     expiresAt: Date
   },
-<<<<<<< HEAD
-  resetPassword: {
-    token: String,
-    expiresAt: Date
-=======
   resetPasswordToken: String,
   resetPasswordExpires: Date,
   name: {
@@ -78,7 +56,6 @@ const userSchema = new Schema({
   onboardingCompleted: {
     type: Boolean,
     default: false
->>>>>>> origin/M-userauth-functionalities
   }
 }, {
   timestamps: true
@@ -86,12 +63,6 @@ const userSchema = new Schema({
 
 // Hash password before saving (only for local auth)
 userSchema.pre('save', async function(next) {
-<<<<<<< HEAD
-    if (!this.isModified('password') || this.googleId) return next();
-    
-    try {
-      if (!this.password) throw new Error('Password is required');
-=======
     if (!this.isModified('password') || !this.authProvider.includes('local')) return next();
     
     try {
@@ -109,21 +80,10 @@ userSchema.pre('save', async function(next) {
       if (!this.password) {
         throw new Error('Password is required for local authentication');
       }
->>>>>>> origin/M-userauth-functionalities
       const salt = await bcrypt.genSalt(10);
       this.password = await bcrypt.hash(this.password, salt);
       next();
     } catch (error) {
-<<<<<<< HEAD
-      next(error as Error);
-    }
-  });
-
-// Method to compare password
-userSchema.methods.comparePassword = async function(candidatePassword: string) {
-  if (this.googleId) return false; // Don't allow password login for Google accounts
-  return bcrypt.compare(candidatePassword, this.password);
-=======
       console.error('❌ Password Hashing Error:', {
         'Error': error instanceof Error ? error.message : 'Unknown error',       
         'Time': new Date().toISOString()
@@ -206,27 +166,17 @@ userSchema.methods.verifyCredentials = async function(loginMethod: 'local' | 'go
     console.error('Credential Verification Error:', error);
     return false;
   }
->>>>>>> origin/M-userauth-functionalities
 };
 
 userSchema.methods.generateResetToken = function() {
   const resetToken = crypto.randomBytes(32).toString('hex');
   
-<<<<<<< HEAD
-  this.resetPassword = {
-    token: crypto.createHash('sha256').update(resetToken).digest('hex'),
-    expiresAt: new Date(Date.now() + 3600000) // 1 hour
-  };
-=======
   this.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
   this.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
->>>>>>> origin/M-userauth-functionalities
   
   return resetToken;
 };
 
-<<<<<<< HEAD
-=======
 // Add this new method for password reset
 userSchema.methods.resetPassword = async function(newPassword: string) {
   try {
@@ -295,7 +245,6 @@ userSchema.methods.getLoginMethods = function() {
   };
 };
 
->>>>>>> origin/M-userauth-functionalities
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 export default User;
