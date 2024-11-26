@@ -8,11 +8,11 @@ export async function POST(req: Request) {
   }
   const {data, userId, projectName} = await req.json();
   console.log("Received data:", data);
-  const client = new MongoClient(mongoURI);
+  const client = new MongoClient(mongoURI!);
   try {
     await client.connect();
     const db = client.db(databaseName);
-    const bucket = new GridFSBucket(db, { bucketName: "project-files" });
+    const bucket = new GridFSBucket(db, { bucketName: process.env.CREATE_PROJECT_BUCKET_NAME });
     const templates = data;
     for (const templateKey of Object.keys(templates)) {
       const templateFiles = templates[templateKey];

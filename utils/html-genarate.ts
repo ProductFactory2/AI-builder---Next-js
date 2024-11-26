@@ -59,7 +59,7 @@ export default async function generateHtml(userId:string, projectName:string ,fi
 
         let Data = {
             data: {
-                templete1: []
+                template1: []
             },
             userId: userId,
             projectName: projectName
@@ -70,13 +70,13 @@ export default async function generateHtml(userId:string, projectName:string ,fi
             while ((match = regex.exec(code)) !== null) {
                 const fileName = match[1].trim();
                 const fileContent = match[2].trim();
-                Data.data[`templete1`].push({ [fileName]: fileContent });
-                
+                Data.data.template1.push({ [fileName]: fileContent });
+
             }
             console.log(`File added: `, Data);
         }
 
-        if (Data.data.templete1.length === 0) {
+        if (Data.data.template1.length === 0) {
             console.warn("No matches found. Check the regex or API response format.");
         } else {
             await fetch("api/model", {

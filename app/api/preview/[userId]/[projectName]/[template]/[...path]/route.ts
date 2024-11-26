@@ -1,19 +1,19 @@
 import { MongoClient, GridFSBucket } from "mongodb";
 
-const mongoURI = "mongodb://localhost:27017";
-const databaseName = "ai-builder";
+const mongoURI = process.env.MONGODB_URI;
+const databaseName = process.env.DATABASE_NAME;
 
 export async function GET(
   req: Request,
   { params }: { params: { userId: string; projectName: string; template: string; path: string[] } }
 ) {
   const { userId, projectName, template, path } = params;
-  const client = new MongoClient(mongoURI);
+  const client = new MongoClient(mongoURI!);
 
   try {
     await client.connect();
     const db = client.db(databaseName);
-    const bucket = new GridFSBucket(db, { bucketName: "projects" });
+    const bucket = new GridFSBucket(db, { bucketName: process.env.CREATE_PROJECT_BUCKET_NAME });
 
     // If path is empty or undefined, default to index.html
     const fileName = path?.length ? path.join('/') : 'index.html';

@@ -90,7 +90,6 @@ export default function ProjectsPage() {
   const allProjects = [...projects, ...localProjects];
   const filteredProjects = allProjects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase());
-
     // Updated filter logic
     const matchesTech = (() => {
       switch (filterType) {
@@ -106,7 +105,6 @@ export default function ProjectsPage() {
           return true;
       }
     })();
-
     return matchesSearch && matchesTech;
   });
 
@@ -373,7 +371,6 @@ export default function ProjectsPage() {
           </div>
         </div>
       </Dialog>
-
     </div>
   )
 }

@@ -9,9 +9,11 @@ interface PreviewStore {
   selectedTemplate: 'template1' | 'template2' | 'template3',
   userId: string | null;
   projectName: string | null;
+  isTemplateSelected: boolean;
   setSelectedDevice: (device: 'desktop' | 'tablet' | 'mobile') => void;
   setSelectedTemplate: (template: 'template1' | 'template2' | 'template3') => void
   setProjectInfo: (userId: string, projectName: string) => void;
+  setTemplateSelected: (selected: boolean) => void;
 }
 
 export const usePreviewStore = create<PreviewStore>((set) => ({
@@ -19,9 +21,11 @@ export const usePreviewStore = create<PreviewStore>((set) => ({
   selectedTemplate: 'template1',
   userId: null,
   projectName: null,
+  isTemplateSelected: false,
   setSelectedDevice: (device) => set({ selectedDevice: device }),
   setSelectedTemplate: (template) => set({ selectedTemplate: template}),
   setProjectInfo: (userId, projectName) => set({ userId, projectName}),
+  setTemplateSelected: (selected) => set({ isTemplateSelected:selected})
 }));
 
 const deviceDimensions = {
