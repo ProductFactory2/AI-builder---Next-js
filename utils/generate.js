@@ -5,18 +5,18 @@ import axios from "axios";
 // import { handler } from "@/app/api/model/route";
 export default async function genData() {
   console.log("clicked");
-  const API_key = `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`;
-  const finalPrompt = `Create an e-commerce website design to sell shoes targeting an audience aged 14-35. The website should include the following key features:
-1. **E-commerce Essentials**: Implement product search, user reviews, and payment gateways to facilitate easy browsing, selection, and purchase of products.
-2. **Design and Branding**: Use a color palette of red and gold. Ensure the website reflects this branding consistently across all pages.
-3. **Navigation Structure**: Include categories for Formal, Casual, and Sports shoes, alongside essential pages like Contact Us and About Us.
-4. **Mobile Optimization and Accessibility**: Ensure the website is fully responsive, providing an optimal browsing experience on mobile devices. Adhere to accessibility standards to accommodate all users.
-5. **Future Integrations**: Design the architecture to allow easy integration of third-party services like shipping and email marketing tools in the future.
-Content such as product descriptions, images, and detailed company information will be developed and added at a later stage.
-Ensure the website's design is user-friendly, visually appealing, and aligns with the latest web design trends to attract and retain the target demographic.
+//   const API_key = `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`;
+//   const finalPrompt = `Create an e-commerce website design to sell shoes targeting an audience aged 14-35. The website should include the following key features:
+// 1. **E-commerce Essentials**: Implement product search, user reviews, and payment gateways to facilitate easy browsing, selection, and purchase of products.
+// 2. **Design and Branding**: Use a color palette of red and gold. Ensure the website reflects this branding consistently across all pages.
+// 3. **Navigation Structure**: Include categories for Formal, Casual, and Sports shoes, alongside essential pages like Contact Us and About Us.
+// 4. **Mobile Optimization and Accessibility**: Ensure the website is fully responsive, providing an optimal browsing experience on mobile devices. Adhere to accessibility standards to accommodate all users.
+// 5. **Future Integrations**: Design the architecture to allow easy integration of third-party services like shipping and email marketing tools in the future.
+// Content such as product descriptions, images, and detailed company information will be developed and added at a later stage.
+// Ensure the website's design is user-friendly, visually appealing, and aligns with the latest web design trends to attract and retain the target demographic.
 
 
-`;
+// `;
   let Data = {
     data: {
       templete1: {},
