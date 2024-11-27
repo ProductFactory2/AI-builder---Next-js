@@ -13,6 +13,8 @@ import { Paperclip, File } from "lucide-react";
 import ImageIcon from "@/public/images/img.png";
 import FilePdf from "@/public/images/pdf.png";
 import generateHtml from "@/utils/html-genarate";
+import LoaderPage from '@/components/loader/page';
+
 interface Message {
   role: "user" | "assistant" | "system";
   content: string;
@@ -37,6 +39,8 @@ export default function ChatbotPage() {
   const { data: session } = useSession();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileData, setFileData] = useState<FileData | null>(null);
+  const [isProducing, setIsProducing] = useState(false);
+
   useEffect(()=>{
     if(store.getState().projects.localProjects.length === 0){
       router.push("/dashboard");
@@ -113,6 +117,8 @@ export default function ChatbotPage() {
     }
 
     try {
+      setIsProducing(true);
+
       const name = store.getState().projects.localProjects[0].name;
       const technologies =
         store.getState().projects.localProjects[0].technologies;
@@ -139,9 +145,11 @@ export default function ChatbotPage() {
       const data = await response.json();
       console.log("Project created:", data);
       await generateHtml(userId,name,finalPrompt)
-      router.push("/preview");
+      router.push("/preview/status/?userId=" + userId + "&projectName=" + name);
     } catch (error) {
       console.error("Error creating project:", error);
+    } finally {
+      setIsProducing(false);
     }
   };
 
@@ -266,6 +274,10 @@ export default function ChatbotPage() {
         return <Paperclip className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
     }
   };
+
+  // if (isProducing) {
+  //   return <LoaderPage />;
+  // }
 
   return (
     <main className="flex flex-col h-screen bg-[#1E1E1E]">
@@ -411,13 +423,13 @@ export default function ChatbotPage() {
               className="w-full pl-10 pr-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5722] placeholder-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isConversationComplete}
             />
-            <button 
+            {/* <button 
               type="button"
               className="absolute left-3 top-1/2 transform -translate-y-1/2"
               onClick={handleFileUpload}
             >
               <Paperclip className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />
-            </button>
+            </button> */}
           </div>
           <button
             type="submit"
@@ -506,6 +518,7 @@ export default function ChatbotPage() {
           </div>
         </div>
       )}
+      {isProducing && <LoaderPage />}
     </main>
   );
 }

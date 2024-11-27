@@ -45,6 +45,9 @@ export async function middleware(request: NextRequest) {
     if (!userData.onboardingCompleted && request.nextUrl.pathname.startsWith('/dashboard')) {
       return NextResponse.redirect(new URL('/onboarding', request.url));
     }
+    if(userData.onboardingCompleted && request.nextUrl.pathname.startsWith('/onboarding')) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
   }
   
   return NextResponse.next();

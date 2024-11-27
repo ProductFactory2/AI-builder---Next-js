@@ -21,3 +21,14 @@ export const DELETE = async (req: Request, context: any) => {
     return new Response('Error deleting project', { status: 500 });
   }
 }
+
+
+export const GET = async (req: Request, context: any) => {
+  const { params } = context;
+  const { id } = params;
+
+  await connectMongoDB();
+  const projects = await Project.find({ userId: id });
+  return new Response(JSON.stringify(projects), { status: 200 });
+}
+

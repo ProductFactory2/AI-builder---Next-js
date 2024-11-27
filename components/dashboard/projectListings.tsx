@@ -108,7 +108,14 @@ export default function ProjectsPage() {
     return matchesSearch && matchesTech;
   });
 
-  const handleCreateProject = () => {
+  const handleCreateProject = async() => {
+
+    const response = await fetch(`/api/projects/${session?.user?.id}`);
+    const data = await response.json();
+    if (data.some((project: Project) => project.name === newProjectName)) {
+      alert('Project name already exists');
+      return;
+    }
 
     if (newProjectName && selectedTech.length > 0) {
       const newProject = {
@@ -254,9 +261,9 @@ export default function ProjectsPage() {
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                {project.referenceFile && <button onClick={() => viewFile(project._id)} className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
+                {/* {project.referenceFile && <button onClick={() => viewFile(project._id)} className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
                   <File className="h-4 w-4 text-[#F05D23]" />
-                </button>}
+                </button>} */}
                 <button
                   className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white"
                   onClick={() => openPromptModal(project)}
@@ -266,9 +273,16 @@ export default function ProjectsPage() {
                 <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
                   <View className="h-4 w-4 text-[#F05D23]" />
                 </button>
-                <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
+                <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white relative group cursor-not-allowed">
                   <Pencil className="h-4 w-4 text-[#F05D23] " />
+                  <span
+                  className="absolute hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 
+               mb-2 px-3 py-1 text-sm bg-gray-800 text-white rounded-md whitespace-nowrap"
+                >
+                  Coming Soon!
+                </span>
                 </button>
+                
                 <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
                   <Trash2
                     className="h-4 w-4 text-[#F05D23]"
