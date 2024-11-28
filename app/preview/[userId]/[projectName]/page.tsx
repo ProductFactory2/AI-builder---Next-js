@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import PreviewDisplay from "@/components/preview/previewDisplay";
 import Navbar from "@/components/preview/previewNav";
 import { usePreviewStore } from "@/components/preview/previewDisplay";
+import { error } from "console";
 
 export default function Preview() {
     const params = useParams();
@@ -25,9 +26,21 @@ export default function Preview() {
                         setSelectedTemplate(data.selectedTemplate);
                     }
                 })
-                .catch(console.error);
+                .catch((error)=>{console.error(error)});
         }
     }, [params, setProjectInfo, setTemplateSelected, setSelectedTemplate]);
+
+
+            useEffect(() => {
+
+           
+
+
+
+
+            },[])
+
+
 
     return (
         <>
