@@ -11,7 +11,7 @@ const poppins = Poppins({
 export default function LoaderPage() {
   return (
     <div className="fixed inset-0 flex justify-center items-center z-[9999] bg-transparent">
-      <div className="absolute inset-0 backdrop-blur-[1px]" />
+      <div className="absolute inset-0 backdrop-blur-[4px]" />
       <div className="relative z-10">
         {/* <style jsx>{`
           @keyframes dot1 {
@@ -79,10 +79,10 @@ export default function LoaderPage() {
             }
           }
         `}</style> */}
-                  <div className={`text-white text-lg mt-56 text-center font-semibold ${poppins.className}`}>
+                  <div className={`text-[#FF5722] text-lg mt-56 text-center font-bold ${poppins.className}`}>
                     Your response is being generated...
                   </div>
-                  <div className={`text-white text-lg mt-2 text-center ${poppins.className}`}>
+                  <div className={`text-[#FF5722] text-lg mt-2 text-center font-semibold ${poppins.className}`}>
                     Irung Bhai.....
                   </div>
         <div 
