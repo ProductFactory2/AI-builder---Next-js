@@ -13,7 +13,7 @@ import { Paperclip, File } from "lucide-react";
 import ImageIcon from "@/public/images/img.png";
 import FilePdf from "@/public/images/pdf.png";
 import generateHtml from "@/utils/html-genarate";
-import LoaderPage from '@/components/loader/page';
+import LoaderPage from "@/components/loader/page";
 
 interface Message {
   role: "user" | "assistant" | "system";
@@ -42,11 +42,11 @@ export default function ChatbotPage() {
   const [isProducing, setIsProducing] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(false);
 
-  useEffect(()=>{
-    if(store.getState().projects.localProjects.length === 0){
+  useEffect(() => {
+    if (store.getState().projects.localProjects.length === 0) {
       router.push("/dashboard");
     }
-  },[]);
+  }, []);
   useEffect(() => {
     const initialMessage: Message = {
       role: "assistant",
@@ -131,7 +131,7 @@ export default function ChatbotPage() {
         userId,
         name,
         technologies,
-        referenceFile: fileData // Include the file data if it exists
+        referenceFile: fileData, // Include the file data if it exists
       };
 
       const response = await fetch("/api/projects", {
@@ -146,8 +146,8 @@ export default function ChatbotPage() {
       store.dispatch(clearProjects());
       const data = await response.json();
       console.log("Project created:", data);
-      await generateHtml(userId,name,finalPrompt)
-      router.push("/preview/status/?userId=" + userId + "&projectName=" + name);
+      await generateHtml(userId, name, finalPrompt);
+      router.push(`/preview/${userId}/${name}`);
     } catch (error) {
       console.error("Error creating project:", error);
     } finally {
@@ -236,16 +236,16 @@ export default function ChatbotPage() {
       if (target.files && target.files[0]) {
         const file = target.files[0];
         setSelectedFile(file);
-        
+
         // Convert file to base64
         const reader = new FileReader();
         reader.onload = async (event) => {
           if (event.target?.result) {
-            const base64Data = event.target.result.toString().split(',')[1];
+            const base64Data = event.target.result.toString().split(",")[1];
             setFileData({
               fileName: file.name,
               fileData: base64Data,
-              fileType: file.type
+              fileType: file.type,
             });
           }
         };
@@ -256,24 +256,68 @@ export default function ChatbotPage() {
   };
 
   const getFileIcon = (fileName: string) => {
-    const extension = fileName.split('.').pop()?.toLowerCase();
+    const extension = fileName.split(".").pop()?.toLowerCase();
     switch (extension) {
-      case 'pdf':
-        return <Image src={FilePdf} alt="pdf" className="w-10 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
-      case 'jpg':
-        return <Image src={ImageIcon} alt="jpg" className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
-      case 'jpeg':
-        return <Image src={ImageIcon} alt="jpg" className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
-      case 'png':
-        return <Image src={ImageIcon} alt="png" className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
-      case 'gif':
-        return <Image src={ImageIcon} alt="gif" className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
-      case 'bmp':
-        return <Image src={ImageIcon} alt="bmp" className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
-      case 'tiff':
-        return <Image src={ImageIcon} alt="tiff" className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
+      case "pdf":
+        return (
+          <Image
+            src={FilePdf}
+            alt="pdf"
+            className="w-10 h-5 text-[#FF5722] hover:text-[#FF7043]"
+          />
+        );
+      case "jpg":
+        return (
+          <Image
+            src={ImageIcon}
+            alt="jpg"
+            className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]"
+          />
+        );
+      case "jpeg":
+        return (
+          <Image
+            src={ImageIcon}
+            alt="jpg"
+            className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]"
+          />
+        );
+      case "png":
+        return (
+          <Image
+            src={ImageIcon}
+            alt="png"
+            className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]"
+          />
+        );
+      case "gif":
+        return (
+          <Image
+            src={ImageIcon}
+            alt="gif"
+            className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]"
+          />
+        );
+      case "bmp":
+        return (
+          <Image
+            src={ImageIcon}
+            alt="bmp"
+            className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]"
+          />
+        );
+      case "tiff":
+        return (
+          <Image
+            src={ImageIcon}
+            alt="tiff"
+            className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]"
+          />
+        );
       default:
-        return <Paperclip className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />;
+        return (
+          <Paperclip className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />
+        );
     }
   };
 
@@ -286,7 +330,6 @@ export default function ChatbotPage() {
       <header className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
         <div className="flex items-center space-x-2">
           <div className="w-10 h-10 rounded-full overflow-hidden">
-            
             <Image
               src={Logo}
               alt="Website Design AI"
@@ -398,7 +441,9 @@ export default function ChatbotPage() {
         {selectedFile && (
           <div className="mb-2 p-2 bg-gray-700 rounded-lg flex items-center gap-2">
             <span>{getFileIcon(selectedFile.name)}</span>
-            <span className="text-white text-sm truncate">{selectedFile.name}</span>
+            <span className="text-white text-sm truncate">
+              {selectedFile.name}
+            </span>
             <button
               type="button"
               onClick={() => {
@@ -439,7 +484,7 @@ export default function ChatbotPage() {
             className="p-2 bg-[#FF5722] text-white rounded-lg disabled:opacity-50 hover:bg-[#FF7043] transition-colors"
           >
             <svg
-              className="w-5 h-5"
+              className="w-5 h-5 rotate-90"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

@@ -1,4 +1,6 @@
 'use client'
+
+import * as React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
@@ -9,11 +11,59 @@ import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { PasswordStrength } from '@/components/ui/password-strength'
-import { validatePassword } from '@/lib/utils/passwordValidation'
+import { validatePassword } from '@/lib/passwordValidation'
 
 interface SignupProps {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
+
+interface OTPInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}
+
+const OTPInput = ({ value, onChange, disabled }: OTPInputProps) => {
+  const inputRefs = Array(6).fill(0).map(() => React.useRef<HTMLInputElement>(null));
+
+  const handleChange = (index: number, digit: string) => {
+    if (digit.length > 1) return;
+    
+    const newValue = value.split('');
+    newValue[index] = digit;
+    const finalValue = newValue.join('');
+    onChange(finalValue);
+
+    // Move to next input if there's a value
+    if (digit && index < 5) {
+      inputRefs[index + 1].current?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !value[index] && index > 0) {
+      inputRefs[index - 1].current?.focus();
+    }
+  };
+
+  return (
+    <div className="flex gap-2 justify-center">
+      {Array(6).fill(0).map((_, index) => (
+        <input
+          key={index}
+          ref={inputRefs[index]}
+          type="text"
+          maxLength={1}
+          value={value[index] || ''}
+          onChange={(e) => handleChange(index, e.target.value)}
+          onKeyDown={(e) => handleKeyDown(index, e)}
+          disabled={disabled}
+          className="w-12 h-12 text-center text-xl font-semibold rounded-md border border-gray-700 bg-white text-black focus:border-orange-500 focus:ring-1 focus:ring-orange-500 disabled:opacity-50"
+        />
+      ))}
+    </div>
+  );
+};
 
 export default function Signup() {
   const [email, setEmail] = useState('')
@@ -28,6 +78,7 @@ export default function Signup() {
   const [isVerified, setIsVerified] = useState(false)
   const [passwordValidation, setPasswordValidation] = useState(validatePassword(''))
   const [verifyStatus, setVerifyStatus] = useState('idle')
+  const [otpMessageType, setOtpMessageType] = useState<'success' | 'error'>('error')
 
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -107,7 +158,10 @@ export default function Signup() {
       setTimer(60)
       setIsTimerRunning(true)
       setOtpError('')
+      setOtpMessageType('success')
+      setOtpError('OTP sent successfully! Please check your email.')
     } catch (error) {
+      setOtpMessageType('error')
       setOtpError('Failed to send OTP. Please try again.')
     }
   }
@@ -278,17 +332,26 @@ export default function Signup() {
               We've sent a verification code to your email address
             </p>
           </DialogHeader>
+
           <div className="space-y-6 p-4">
-            <Input
-              type="text"
-              placeholder="Enter OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              disabled={!isTimerRunning || isVerified}
-              className="bg-white h-12 text-base text-black"
-            />
+            <div className="space-y-4">
+              <OTPInput
+                value={otp}
+                onChange={setOtp}
+                disabled={!isTimerRunning || isVerified}
+              />
+              <p className="text-gray-400 text-sm text-center">
+                OTP sent to {email}
+              </p>
+            </div>
             
-            {otpError && <p className="text-red-500 text-sm text-center">{otpError}</p>}
+            {otpError && (
+              <p className={`text-sm text-center ${
+                otpMessageType === 'success' ? 'text-green-500' : 'text-red-500'
+              }`}>
+                {otpError}
+              </p>
+            )}
             {isVerified && (
               <p className="text-green-500 text-sm text-center">User Verified Successfully</p>
             )}
@@ -296,7 +359,7 @@ export default function Signup() {
             <div className="flex flex-col space-y-4">
               <Button
                 onClick={handleVerifyOTP}
-                disabled={!isTimerRunning || !otp || isVerified}
+                disabled={!isTimerRunning || otp.length !== 6 || isVerified}
                 className="w-full h-12 text-base bg-orange-500 hover:bg-orange-600 disabled:bg-gray-700"
               >
                 Verify OTP

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { PasswordInput } from '@/components/ui/password-input'
 import { PasswordStrength } from '@/components/ui/password-strength'
 import Link from 'next/link'
-import { validatePassword } from '@/lib/utils/passwordValidation'
+import { validatePassword } from '@/lib/passwordValidation'
 
 export default function ResetPassword({ params }: { params: { token: string } }) {
   const [password, setPassword] = useState('')

@@ -8,12 +8,12 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET
   })
   const { pathname } = request.nextUrl
-  const referer = request.headers.get('referer')
-  const isComingFromChatbot = referer?.includes('/chatbot')
+  // const referer = request.headers.get('referer')
+  // const isComingFromChatbot = referer?.includes('/chatbot')
  
-  if (isComingFromChatbot && pathname !== '/chatbot' && pathname !== '/dashboard') {
-    return NextResponse.redirect(new URL('/chatbot', request.url))
-  }
+  // if (isComingFromChatbot && pathname !== '/chatbot' && pathname !== '/dashboard') {
+  //   return NextResponse.redirect(new URL('/chatbot', request.url))
+  // }
   if (pathname === '/') {
     if (token) {
       return NextResponse.redirect(new URL('/dashboard', request.url))

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import User from '@/models/User'
-import { validatePassword } from '@/lib/utils/passwordValidation'
+import { validatePassword } from '@/lib/passwordValidation'
 
 export async function POST(request: Request) {
   try {

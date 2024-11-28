@@ -37,7 +37,8 @@ export default async function generateHtml(
                         4. **Rules**:
                         - Do not include any introductory or closing text, such as "Here are your files."
                         - Ensure the filenames and HTML content are clean and consistent with the specified format.
-                        
+                        5. Ensure each file is approximately **100 lines of code**.
+                        6. Get images from free online open source APIs.
                         Please follow the structure described and make sure each page is clearly defined.
                         `,
           },

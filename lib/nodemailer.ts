@@ -4,11 +4,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
-<<<<<<< HEAD
-    pass: process.env.EMAIL_PASSWORD // Use an App Password if using Gmail
-=======
     pass: process.env.EMAIL_PASSWORD
->>>>>>> origin/M-userauth-functionalities
   }
 });
 
@@ -36,8 +32,6 @@ export async function sendOTPEmail(email: string, otp: string) {
     return false;
   }
 }
-<<<<<<< HEAD
-=======
 
 export async function sendResetPasswordEmail(email: string, resetToken: string) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '');
@@ -88,4 +82,3 @@ export async function sendResetPasswordEmail(email: string, resetToken: string) 
     return false;
   }
 }
->>>>>>> origin/M-userauth-functionalities

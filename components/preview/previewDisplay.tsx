@@ -37,7 +37,7 @@ const deviceDimensions = {
 export default function PreviewDisplay() {
   const {selectedDevice, selectedTemplate, userId, projectName} = usePreviewStore();
   
-  const previewUrl = userId && projectName ? `api/preview/${userId}/${projectName}/${selectedTemplate}/index.html`: '';
+  const previewUrl = userId && projectName ? `/api/preview/${userId}/${projectName}/${selectedTemplate}/index.html`: '';
   
   return (
     <div className="flex justify-center bg-zinc-800 min-h-[calc(100vh-64px)] p-4">

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function PreviewNav() {
+  const { push } = useRouter();
   
   const { selectedDevice, selectedTemplate, isTemplateSelected, userId, projectName, setSelectedDevice, setSelectedTemplate, setTemplateSelected} = usePreviewStore();
 
@@ -64,7 +65,9 @@ export default function PreviewNav() {
     'template2': 'Template 2',
     'template3': 'Template 3'
   } as const;
-
+const redirectToHome =()=>{
+  push('/');
+}
   return (
     <div className="flex h-16 items-center justify-between bg-zinc-900 px-4">
       <div className="flex items-center gap-4">
@@ -74,6 +77,7 @@ export default function PreviewNav() {
           width={48}
           height={48}
           className="rounded-full"
+          onClick={redirectToHome}
         />
         {isTemplateSelected ? (
           <h1 className="text-white text-xl">{projectName}</h1>

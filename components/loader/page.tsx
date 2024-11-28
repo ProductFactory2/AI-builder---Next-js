@@ -79,10 +79,10 @@ export default function LoaderPage() {
             }
           }
         `}</style> */}
-                  <div className={`text-[#FF5722] text-lg mt-56 text-center text-[20px] font-semibold px-4 py-2 rounded-lg ${poppins.className}`}>
+                  <div className={`text-[#FF5722] text-lg mt-60 text-center text-[20px] font-semibold px-4 py-2 rounded-lg ${poppins.className}`}>
                     Your response is being generated...
                   </div>
-                  <div className={`text-[#FF5722] text-lg mt-2 text-center text-[20px] font-semibold bg-[#1e3f57] px-4 py-2 rounded-lg ${poppins.className}`}>
+                  <div className={`bg-[#FF5722]  mt-2 text-center text-[30px] font-bold  text-[#1e3f57] px-4 py-2 rounded-lg ${poppins.className}`}>
                     Irung Bhai.....
                   </div>
         <div 
