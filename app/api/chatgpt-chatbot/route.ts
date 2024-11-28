@@ -16,7 +16,7 @@ If the user shifts to describing a different website or project mid-conversation
 Your goal is to gather all critical aspects of the website, such as its purpose, target audience, key features, design preferences, content needs, and any technical requirements.
 This includes specific details like navigation structure, branding, interactivity, third-party integrations, and accessibility standards.
 Once all requirements are gathered, create a final prompt to instruct another AI model to generate the website design.
-This final prompt should start with "FINAL_PROMPT_START" on a new line, followed by a complete, well-organized summary of the requirements in a design-focused format, and conclude with "FINAL_PROMPT_END" on a new line.
+This final prompt should start with "Content" on a new line, followed by a complete, well-organized summary of the requirements in a design-focused format, and conclude with "Content_End" on a new line.
 Only website-related information will be included in the final prompt to maintain relevance and accuracy.`;
 export async function POST(req: Request) {
     try {

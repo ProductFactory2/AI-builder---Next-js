@@ -40,6 +40,7 @@ export default function ChatbotPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileData, setFileData] = useState<FileData | null>(null);
   const [isProducing, setIsProducing] = useState(false);
+  const [buttonDisabled, setButtonDisabled] = useState(false);
 
   useEffect(()=>{
     if(store.getState().projects.localProjects.length === 0){
@@ -85,9 +86,9 @@ export default function ChatbotPage() {
           ...prev,
           { role: "assistant", content: data.response },
         ]);
-        if (data.response.includes("FINAL_PROMPT_START")) {
+        if (data.response.includes("Content")) {
           const promptMatch = data.response.match(
-            /FINAL_PROMPT_START\s*([\s\S]*?)\s*FINAL_PROMPT_END/
+            /Content\s*([\s\S]*?)\s*Content_End/
           );
           if (promptMatch) {
             const extractedPrompt = promptMatch[1].trim();
@@ -111,6 +112,7 @@ export default function ChatbotPage() {
     }
   }
   const handlePurduce = async () => {
+    setButtonDisabled(true);
     if (!finalPrompt || !session?.user?.id) {
       console.error("Missing required data");
       return;
@@ -308,11 +310,11 @@ export default function ChatbotPage() {
         </div>
         <button
           className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
-            finalPrompt
+            finalPrompt && !buttonDisabled
               ? "bg-[#FF5722] text-white hover:bg-[#FF7043]"
               : "bg-gray-500 text-gray-300 cursor-not-allowed"
           }`}
-          disabled={!finalPrompt}
+          disabled={!finalPrompt || buttonDisabled}
           onClick={handlePurduce}
         >
           <span>

@@ -51,6 +51,7 @@ export default function ProjectsPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
   const [selectedProjectPrompt, setSelectedProjectPrompt] = useState<string>('');
+  const [errorProjectName, setErrorProjectName] = useState(false);
   // Fetch projects from the server
   useEffect(() => {
     fetchProjects();
@@ -113,7 +114,7 @@ export default function ProjectsPage() {
     const response = await fetch(`/api/projects/${session?.user?.id}`);
     const data = await response.json();
     if (data.some((project: Project) => project.name === newProjectName)) {
-      alert('Project name already exists');
+      setErrorProjectName(true);
       return;
     }
 
@@ -265,13 +266,26 @@ export default function ProjectsPage() {
                   <File className="h-4 w-4 text-[#F05D23]" />
                 </button>} */}
                 <button
-                  className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white"
+                  className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white relative group"
                   onClick={() => openPromptModal(project)}
                 >
+    <span
+                  className="absolute hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 
+               mb-2 px-3 py-1 text-sm bg-gray-800 text-white rounded-md whitespace-nowrap"
+                >
+                      Prompt Preview
+                    </span>
                   <SquareTerminal className="h-4 w-4 text-[#F05D23]" />
+
                 </button>
-                <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
+                <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white relative group">
                   <View className="h-4 w-4 text-[#F05D23]" />
+                  <span
+                  className="absolute hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 
+               mb-2 px-3 py-1 text-sm bg-gray-800 text-white rounded-md whitespace-nowrap"
+                >
+                      View Project
+                    </span>
                 </button>
                 <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white relative group cursor-not-allowed">
                   <Pencil className="h-4 w-4 text-[#F05D23] " />
@@ -283,11 +297,17 @@ export default function ProjectsPage() {
                 </span>
                 </button>
                 
-                <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
+                <button className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white relative group">
                   <Trash2
                     className="h-4 w-4 text-[#F05D23]"
                     onClick={() => handleDeleteClick(project._id)}
                   />
+                  <span
+                  className="absolute hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 
+               mb-2 px-3 py-1 text-sm bg-gray-800 text-white rounded-md whitespace-nowrap"
+                >
+                      Delete Project
+                    </span>
                 </button>
               </div>
             </div>
@@ -321,6 +341,7 @@ export default function ProjectsPage() {
               className="h-10 w-full rounded-md bg-[#2A2A2A] px-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF5722]"
             />
           </div>
+          {errorProjectName && <p className="text-red-500 text-center">Project name already exists</p>}
           <div className="space-y-2">
             <div className="text-white mb-2">Select Technologies:</div>
             <div className="flex space-x-2 ">
