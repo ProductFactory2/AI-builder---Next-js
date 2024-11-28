@@ -32,6 +32,7 @@ export default function PreviewNav() {
   } = usePreviewStore();
 
   const handleTemplateSelection = async () => {
+    console.log("handleTemplateSelection", selectedTemplate, projectName);
     try {
       const response = await fetch("/api/preview/select", {
         method: "POST",
@@ -44,7 +45,7 @@ export default function PreviewNav() {
           selectedTemplate,
         }),
       });
-
+      console.log("response", response);
       if (response.ok) {
         setTemplateSelected(true);
       }
@@ -136,9 +137,21 @@ export default function PreviewNav() {
             >
               Download
             </button>
-            <button className="px-4 py-2 border border-orange-500 text-orange-500 rounded-md hover:bg-orange-500 hover:text-white">
-              Customize
+            <button
+              // className="px-4 py-2 border border-orange-500 text-orange-500 rounded-md hover:bg-orange-500 hover:text-white"
+              className="rounded-md p-2 text-white bg-orange-500 relative group cursor-not-allowed"
+            >
+              <p>Customize</p>
+            <span
+              className="absolute hidden group-hover:block  left-1/2 transform -translate-x-1/2 
+                px-3 py-1 text-sm bg-gray-800 text-white rounded-md whitespace-nowrap"
+            >
+              Coming Soon!
+            </span>
             </button>
+            {/* <button>
+              <Pencil className="h-4 w-4 text-[#F05D23] " />
+            </button> */}
           </>
         ) : (
           <AlertDialog>

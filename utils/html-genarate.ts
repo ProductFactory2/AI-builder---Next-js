@@ -62,7 +62,7 @@ export default async function generateHtml(
     const regex =
       /([a-zA-Z0-9_.-]+\.html)\n([\s\S]*?)(?=\n[a-zA-Z0-9_.-]+\.html|$)/g;
 
-    let Data = {
+  const Data = {
       data: {
         template1: [],
       },

@@ -149,11 +149,15 @@ export default function ProjectsPage() {
   const handleCreateProject = async () => {
     const response = await fetch(`/api/projects/${session?.user?.id}`);
     const data = await response.json();
-    if (data.some((project: Project) => project.name === newProjectName)) {
+    // if (data.some((project: Project) => project.name === newProjectName)) {
+    //   setErrorProjectName(true);
+    //   return;
+    // }
+    const existingProjects = data.map((project:any) => project.name.toLowerCase());
+    if (existingProjects.includes(newProjectName.toLowerCase())) {
       setErrorProjectName(true);
       return;
     }
-
     if (newProjectName && selectedTech.length > 0) {
       const newProject = {
         _id: Date.now().toString(),
@@ -225,28 +229,27 @@ export default function ProjectsPage() {
     setIsPromptModalOpen(true);
   };
 
-  const viewFile = async (projectId: string) => {
-    try {
-      const response = await fetch(`/api/projects/${projectId}/file`);
-      if (response.status === 500) {
-        alert("File not found");
-        return;
-      }
-      if (!response.ok) throw new Error("Failed to fetch file");
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      window.open(url, "_blank");
-    } catch (error) {
-      console.error("Error viewing file:", error);
-    }
-  };
+  //  show file or image
+  // const viewFile = async (projectId: string) => {
+  //   try {
+  //     const response = await fetch(`/api/projects/${projectId}/file`);
+  //     if (response.status === 500) {
+  //       alert("File not found");
+  //       return;
+  //     }
+  //     if (!response.ok) throw new Error("Failed to fetch file");
+  //     const blob = await response.blob();
+  //     const url = window.URL.createObjectURL(blob);
+  //     window.open(url, "_blank");
+  //   } catch (error) {
+  //     console.error("Error viewing file:", error);
+  //   }
+  // };
 
-  const navigatePreviewPage =(projectName: string)=>{
-    console.log("sdasd",projectName);
+  const navigatePreviewPage = (projectName: string) => {
+    console.log("sdasd", projectName);
     router.push(`/preview/${session.user.id}/${projectName.name}`);
-  }
-
-
+  };
 
   return (
     <div className="min-h-screen bg-[#292929] p-6">
@@ -276,7 +279,7 @@ export default function ProjectsPage() {
           {filterButton}
           <button
             onClick={() => setIsCreateModalOpen(true)}
-         className="flex-1 sm:flex-none h-10 items-center gap-2 rounded-md bg-[#F05D23] px-4 text-white hover:bg-[#F05D23]/90 shadow-md shadow-orange-400/50"
+            className="flex-1 sm:flex-none h-10 items-center gap-2 rounded-md bg-[#F05D23] px-4 text-white hover:bg-[#F05D23]/90 shadow-md shadow-orange-400/50"
             // className="flex-1 sm:flex-none h-10 items-center gap-2 rounded-md bg-[#F05D23] px-4 text-white hover:bg-[#F05D23]/90 shadow-lg shadow-orange-400/50"
           >
             {/* <Plus className="h-4 w-4" /> */}+ Create
@@ -342,7 +345,10 @@ export default function ProjectsPage() {
                   </span>
                   <SquareTerminal className="h-4 w-4 text-[#F05D23]" />
                 </button>
-                <button onClick={()=>navigatePreviewPage(project)} className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white relative group">
+                <button
+                  onClick={() => navigatePreviewPage(project)}
+                  className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white relative group"
+                >
                   <View className="h-4 w-4 text-[#F05D23]" />
                   <span
                     className="absolute hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 
