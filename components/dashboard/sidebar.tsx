@@ -51,15 +51,16 @@ export default function Sidebar({
       {/* Mobile Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-[99]"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <div className={`
-        fixed lg:static inset-y-0 left-0 z-30
+        fixed lg:static inset-y-0 left-0 z-[100]
         flex h-screen w-64 flex-col bg-[#1E1E1E] transform transition-transform duration-200 ease-in-out
+        pointer-events-auto
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <div className="flex h-[60px] items-center justify-between border-b border-[#2A2A2A] px-6">

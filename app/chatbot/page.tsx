@@ -156,8 +156,6 @@ export default function ChatbotPage() {
   };
 
   const handleOut = () => {
-    console.log("handleback called");
-    console.log("messages length:", messages.length);
 
     if (
       messages.length > 0 ||

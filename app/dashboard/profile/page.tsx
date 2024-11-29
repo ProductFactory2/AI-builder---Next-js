@@ -181,10 +181,19 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto p-8">
+    <div className="container mx-auto p-8  ">
       {!showMainProfile ? (
-        <Dialog open={showPasswordSetupModal} onOpenChange={() => {}}>
-          <DialogContent className="bg-[#1E1E1E] text-white border-[#F05D23]/20">
+      
+        
+        <Dialog open={showPasswordSetupModal} onOpenChange={() => {}} >
+        <DialogContent className="bg-zinc-900 text-white border-gray-700 fixed left-[58%]" 
+          hideClose 
+          onInteractOutside={(e) => {
+            e.preventDefault()
+          }}
+          onEscapeKeyDown={(e) => {
+            e.preventDefault()
+          }}>
             <DialogHeader>
               <DialogTitle>Set Up Password</DialogTitle>
               <p className="text-sm text-gray-400">
@@ -212,7 +221,7 @@ export default function ProfilePage() {
                 />
 
                 <div>
-                  <Label htmlFor="confirmPassword">New Password</Label>
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
                   <PasswordInput
                     id="confirmPassword"
                     value={confirmPassword}
@@ -239,6 +248,7 @@ export default function ProfilePage() {
             </form>
           </DialogContent>
         </Dialog>
+     
       ) : (
         <div className="space-y-6">
           <Card className="border-[#F05D23]/20 bg-[#1E1E1E]">
@@ -358,7 +368,7 @@ export default function ProfilePage() {
           </Card>
         </div>
       )}
-
+      
       <Dialog open={showForgotPasswordModal} onOpenChange={setShowForgotPasswordModal}>
         <DialogContent className="bg-zinc-900 text-white border-gray-700">
           <DialogHeader>

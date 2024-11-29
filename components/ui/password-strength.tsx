@@ -1,3 +1,4 @@
+import * as React from "react"
 import { cn } from "@/lib/utils"
 
 interface PasswordStrengthProps {
@@ -11,9 +12,15 @@ interface PasswordStrengthProps {
   };
   score: number;
   strength: 'weak' | 'medium' | 'strong';
+  onValidationChange?: (isValid: boolean) => void;
 }
 
-export function PasswordStrength({ password, checks, score, strength }: PasswordStrengthProps) {
+export function PasswordStrength({ password, checks, score, strength, onValidationChange }: PasswordStrengthProps) {
+  React.useEffect(() => {
+    const isValid = Object.values(checks).every(check => check === true);
+    onValidationChange?.(isValid);
+  }, [checks, onValidationChange]);
+
   if (!password) return null;
 
   return (

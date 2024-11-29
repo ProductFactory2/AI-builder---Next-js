@@ -149,9 +149,6 @@ export default function PreviewNav() {
               Coming Soon!
             </span>
             </button>
-            {/* <button>
-              <Pencil className="h-4 w-4 text-[#F05D23] " />
-            </button> */}
           </>
         ) : (
           <AlertDialog>

@@ -15,7 +15,7 @@ export default function DashboardLayout({
     <div className="flex h-screen bg-[#1C1C1C]">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto ">
         {/* Mobile Header with Hamburger */}
         <div className="lg:hidden flex items-center p-4 border-b border-[#2A2A2A]">
           <button

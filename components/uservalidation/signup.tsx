@@ -79,6 +79,7 @@ export default function Signup() {
   const [passwordValidation, setPasswordValidation] = useState(validatePassword(''))
   const [verifyStatus, setVerifyStatus] = useState('idle')
   const [otpMessageType, setOtpMessageType] = useState<'success' | 'error'>('error')
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -96,6 +97,10 @@ export default function Signup() {
     setPasswordValidation(validatePassword(password))
   }, [password])
 
+  const handlePasswordValidationChange = (isValid: boolean) => {
+    setIsPasswordValid(isValid);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -105,6 +110,12 @@ export default function Signup() {
       setError('Please fill in all fields')
       return
     }
+
+    if (!isPasswordValid) {
+      setError('Please ensure your password meets all requirements')
+      return
+    }
+
     try {
       // Check if user exists first
       const checkUser = await fetch('/api/auth/check-user', {
@@ -272,6 +283,7 @@ export default function Signup() {
                   checks={passwordValidation.checks}
                   score={passwordValidation.score}
                   strength={passwordValidation.strength}
+                  onValidationChange={handlePasswordValidationChange}
                 />
                 {error && (
                   <p className="text-red-500 text-sm mt-1 text-center">{error}</p>
@@ -279,7 +291,12 @@ export default function Signup() {
               </div>
 
               <div className="flex justify-center pt-4">
-                <Button type="submit" className="w-[250px] h-12 text-base bg-orange-500 hover:bg-orange-600">
+                <Button 
+                  type="submit" 
+                  className="w-[250px] h-12 text-base bg-orange-500 hover:bg-orange-600 
+                    disabled:bg-orange-500/50 disabled:cursor-not-allowed"
+                  disabled={!isPasswordValid || !email}
+                >
                   CONTINUE
                 </Button>
               </div>
@@ -324,8 +341,17 @@ export default function Signup() {
           </div>
         </div>
       </div>
-      <Dialog open={showOtpModal} onOpenChange={setShowOtpModal}>
-        <DialogContent className="bg-zinc-900 text-white border-gray-700">
+      <Dialog open={showOtpModal} modal={true}>
+        <DialogContent 
+          className="bg-zinc-900 text-white border-gray-700" 
+          hideClose 
+          onInteractOutside={(e) => {
+            e.preventDefault()
+          }}
+          onEscapeKeyDown={(e) => {
+            e.preventDefault()
+          }}
+        >
           <DialogHeader className="space-y-3 text-center">
             <DialogTitle className="text-2xl font-bold">Verify Your Email</DialogTitle>
             <p className="text-gray-400 text-sm">

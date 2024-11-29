@@ -26,10 +26,8 @@ export async function POST(req: Request) {
       
       if (files.length) {
         if (template === selectedTemplate) {
-          // Update metadata for selected template
-          console.log("files:---------------->", files,process.env.CREATE_PROJECT_BUCKET_NAME!);
-          await db
-            .collection(process.env.CREATE_PROJECT_BUCKET_NAME!)
+           await db
+            .collection(`${process.env.CREATE_PROJECT_BUCKET_NAME!}.files`)
             .updateOne(
               { filename: filePath },
               { $set: { "metadata.selected": true } }
