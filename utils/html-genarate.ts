@@ -5,42 +5,45 @@ export default async function generateHtml(
   projectName: string,
   finalPrompt: string
 ) {
-  // const finalPrompt =
   try {
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o-preview",
         messages: [
           {
             role: "system",
-            content: `
-                        You are tasked with generating mutiple HTML files.
+            content: `You are tasked with generating multiple HTML files based on the provided instructions. Ensure the filenames match the link tags to enable proper navigation. Follow these guidelines:
 
-                        Instructions:
-                        1. Provide multiple HTML files (at least index.html as the homepage and additional pages like products.html, formal.html, casual.html, sports.html, contact.html, and about.html).
-                        2. **Output Format**: 
-                        - Each file must start with the filename on a new line (e.g., "index.html").
-                        - Immediately follow the filename with its corresponding HTML content.
-                        - Separate each file with a newline. Do not use special characters or comments like \`<!-- index.html -->\`.
-                        - every file should have tailwind cdn link    
-                        - Use this format for each file:
-                            filename.html
-                            <html>
-                            ...
-                            </html>
-                            
-                        3. Each HTML file must contain:
-                        - A header with navigation links.
-                        - A main content section relevant to that page.
-                        - A footer section.
-                        4. **Rules**:
-                        - Do not include any introductory or closing text, such as "Here are your files."
-                        - Ensure the filenames and HTML content are clean and consistent with the specified format.
-                        5. Ensure each file is approximately **100 lines of code**.
-                        6. Get images from free online open source APIs.
-                        Please follow the structure described and make sure each page is clearly defined.
-                        `,
+                  1. **File Requirements**:
+                   -               Generate multiple HTML files, including 'index.html' (homepage) and additional pages such as 'products.html', 'formal.html', 'casual.html', 'sports.html', 'contact.html', and 'about.html'.
+
+                  2. **HTML Structure**:
+                   - Each HTML file must:
+                     - Start with the filename on a new line (e.g., index.html).
+                     - Be followed by its complete HTML content.
+                     - Contain a header with navigation links, a main content section, and a footer.
+                     - Include the Tailwind CSS CDN for styling.
+                     - Ensure the filenames are consistent with navigation links for seamless transitions between pages.
+
+                  3. **Output Format**:
+                   - Each file should use the following format:
+                     filename.html
+                     <html>
+                     ...
+                     </html>
+     
+                   - Separate each file with a newline. Do not use comments (e.g., <!-- index.html -->) to indicate file names.
+
+                  4. **Content Guidelines**:
+                    - Each page's content should be relevant to its title (e.g., formal.html, showcases formal clothing).
+                   - Include placeholders for images, fetched from free and open-source APIs.
+                   - Aim for approximately 100 lines of code per file.
+
+                  5. **Other Notes**:
+                    - Do not include introductory or closing remarks.
+                    - Ensure clear and clean navigation for a cohesive user experience.
+                  `,
           },
           {
             role: "user",
@@ -62,7 +65,7 @@ export default async function generateHtml(
     const regex =
       /([a-zA-Z0-9_.-]+\.html)\n([\s\S]*?)(?=\n[a-zA-Z0-9_.-]+\.html|$)/g;
 
-  const Data = {
+    let Data = {
       data: {
         template1: [],
       },
@@ -96,17 +99,10 @@ export default async function generateHtml(
         .catch((err) => {
           console.log("error in ", err);
         });
-        return true;
+      return true;
     }
   } catch (error) {
     console.log("error  ", error);
-    return false
+    return false;
   }
 }
-
-
-
-
-
-
-
