@@ -34,7 +34,7 @@ export default function Header() {
                         <p className='btn' onClick={() => router.push('/login')}>Login</p>
                         
                     </nav>
-                    <nav className='text-white '>
+                    <nav className='text-white'>
                         <p className='btn' onClick={() => router.push('/signup')}>Sign-Up</p>
                         
                     </nav>
