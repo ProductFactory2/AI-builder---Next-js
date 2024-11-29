@@ -90,7 +90,7 @@ export default function PreviewNav() {
           onClick={redirectToDashboard}
         />
         {isTemplateSelected ? (
-          <h1 className="text-white text-xl">{projectName}</h1>
+          <h1 className="text-white text-xl">{projectName?.trim().replace(/-/g, ' ')}</h1>
         ) : (
           <div className="relative group">
             <button className="flex items-center justify-between w-[180px] px-3 py-2 text-white bg-transparent border border-orange-500 rounded-md">

@@ -9,7 +9,7 @@ export default async function generateHtml(
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
-        model: "gpt-4o-preview",
+        model: "gpt-4o",
         messages: [
           {
             role: "system",

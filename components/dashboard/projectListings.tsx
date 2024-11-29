@@ -158,14 +158,16 @@ export default function ProjectsPage() {
       setErrorProjectName(true);
       return;
     }
-    if (newProjectName && selectedTech.length > 0) {
+    if (newProjectName.trim().length>0 && selectedTech.length > 0) {
       const newProject = {
         _id: Date.now().toString(),
-        name: newProjectName,
+        name:  newProjectName.replace(/\s+/g, '-'),
         technologies: selectedTech,
+        local_name: newProjectName
       };
       dispatch(addProject(newProject));
       setIsCreateModalOpen(false);
+      console.log(newProject)
       router.push("/chatbot");
     }
   };
@@ -248,7 +250,7 @@ export default function ProjectsPage() {
 
   const navigatePreviewPage = (projectName: string) => {
     console.log("sdasd", projectName);
-    router.push(`/preview/${session.user.id}/${projectName.name}`);
+    router.push(`/preview/${session.user.id}/${projectName.name.trim().replace(/\s+/g, '-')}`);
   };
 
   return (
@@ -300,7 +302,7 @@ export default function ProjectsPage() {
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
                 <h3 className="text-lg font-medium text-white">
-                  {project.name}
+                  {project.name.replace(/-/g, ' ')}
                 </h3>
                 <div className="flex flex-wrap items-center gap-2">
                   {project.technologies.map((tech: any) => (
@@ -456,7 +458,7 @@ export default function ProjectsPage() {
           <button
             onClick={handleCreateProject}
             className="mt-4 h-10 w-full rounded-md bg-[#F05D23] font-medium text-white hover:bg-[#F05D23]/90 disabled:opacity-50"
-            disabled={!newProjectName || selectedTech.length === 0}
+            disabled={!newProjectName || newProjectName.trim().length == 0 || selectedTech.length === 0}
           >
             Create
           </button>

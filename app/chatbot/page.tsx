@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter,  } from "next/navigation";
 import { store } from "@/store/store";
 import { clearProjects } from "@/store/projectSlice";
 import { useSession } from "next-auth/react";
@@ -122,6 +122,7 @@ export default function ChatbotPage() {
       setIsProducing(true);
 
       const name = store.getState().projects.localProjects[0].name;
+      const unHandleName = store.getState().projects.localProjects[0].local_name;
       const technologies =
         store.getState().projects.localProjects[0].technologies;
       const userId = session.user.id;
@@ -129,7 +130,7 @@ export default function ChatbotPage() {
       const projectData = {
         finalPrompt,
         userId,
-        name,
+        name:unHandleName,
         technologies,
         referenceFile: fileData, // Include the file data if it exists
       };

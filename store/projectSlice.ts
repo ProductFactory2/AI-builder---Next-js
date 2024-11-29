@@ -4,6 +4,7 @@ interface Project {
   _id: string;
   name: string;
   technologies: string[];
+  local_name: string;
 }
 
 const projectSlice = createSlice({
