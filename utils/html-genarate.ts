@@ -3,17 +3,23 @@ import axios from "axios";
 export default async function generateHtml(
   userId: string,
   projectName: string,
-  finalPrompt: string
+  finalPrompt: string,
+  fileData?: { fileName: string; fileData: string; fileType: string }
 ) {
   try {
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
-            content: `You are tasked with generating multiple HTML files based on the provided instructions. Ensure the filenames match the link tags to enable proper navigation. Follow these guidelines:
+            content: `You are tasked with generating multiple HTML files based on the provided instructions. ${
+              fileData 
+                ? `There is a reference image provided with filename: ${fileData.fileName}. Please consider this when designing the website.` 
+                : ''
+            }
+            Ensure the filenames match the link tags to enable proper navigation. Follow these guidelines:
 
                   1. **File Requirements**:
                    -               Generate multiple HTML files, including 'index.html' (homepage) and additional pages such as 'products.html', 'formal.html', 'casual.html', 'sports.html', 'contact.html', and 'about.html'.
@@ -47,7 +53,11 @@ export default async function generateHtml(
           },
           {
             role: "user",
-            content: `Generate a detailed multiple HTML file based on the following prompt and remove unwanted text. Don't use bold for filenames and give the string as output with filename: ${finalPrompt}`,
+            content: `Generate a detailed multiple HTML file based on the following prompt and remove unwanted text. ${
+              fileData 
+                ? `Consider the provided reference image when designing the layout and style.` 
+                : ''
+            } Don't use bold for filenames and give the string as output with filename: ${finalPrompt}`,
           },
         ],
         temperature: 0.7,

@@ -231,22 +231,23 @@ export default function ProjectsPage() {
     setIsPromptModalOpen(true);
   };
 
-  //  show file or image
-  // const viewFile = async (projectId: string) => {
-  //   try {
-  //     const response = await fetch(`/api/projects/${projectId}/file`);
-  //     if (response.status === 500) {
-  //       alert("File not found");
-  //       return;
-  //     }
-  //     if (!response.ok) throw new Error("Failed to fetch file");
-  //     const blob = await response.blob();
-  //     const url = window.URL.createObjectURL(blob);
-  //     window.open(url, "_blank");
-  //   } catch (error) {
-  //     console.error("Error viewing file:", error);
-  //   }
-  // };
+   //show file or image
+
+  const viewFile = async (projectId: string) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/file`);
+      if (response.status === 500) {
+        alert("File not found");
+        return;
+      }
+      if (!response.ok) throw new Error("Failed to fetch file");
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } catch (error) {
+      console.error("Error viewing file:", error);
+    }
+  };
 
   const navigatePreviewPage = (projectName: string) => {
     console.log("sdasd", projectName);
@@ -332,9 +333,9 @@ export default function ProjectsPage() {
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                {/* {project.referenceFile && <button onClick={() => viewFile(project._id)} className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
+                {project.referenceFile && <button onClick={() => viewFile(project._id)} className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white">
                   <File className="h-4 w-4 text-[#F05D23]" />
-                </button>} */}
+                </button>} 
                 <button
                   className="rounded-md p-2 text-gray-400 hover:bg-[#1C1C1C] hover:text-white relative group"
                   onClick={() => openPromptModal(project)}

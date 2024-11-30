@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter,  } from "next/navigation";
 import { store } from "@/store/store";
-import { clearProjects } from "@/store/projectSlice";
+import { clearProjects, updateProjectData } from "@/store/projectSlice";
 import { useSession } from "next-auth/react";
 import Foot from "@/public/foot-print.svg";
 import Logo from "@/public/assets/images/logo.png";
@@ -123,16 +123,16 @@ export default function ChatbotPage() {
 
       const name = store.getState().projects.localProjects[0].name;
       const unHandleName = store.getState().projects.localProjects[0].local_name;
-      const technologies =
-        store.getState().projects.localProjects[0].technologies;
+      const technologies = store.getState().projects.localProjects[0].technologies;
+      const storedFileData = store.getState().projects.localProjects[0].fileData;
       const userId = session.user.id;
 
       const projectData = {
         finalPrompt,
         userId,
-        name:unHandleName,
+        name: unHandleName,
         technologies,
-        referenceFile: fileData, // Include the file data if it exists
+        referenceFile: storedFileData,
       };
 
       const response = await fetch("/api/projects", {
@@ -147,7 +147,7 @@ export default function ChatbotPage() {
       store.dispatch(clearProjects());
       const data = await response.json();
       console.log("Project created:", data);
-      await generateHtml(userId, name, finalPrompt);
+      await generateHtml(userId, name, finalPrompt, storedFileData);
       router.push(`/preview/${userId}/${name}`);
     } catch (error) {
       console.error("Error creating project:", error);
@@ -229,7 +229,7 @@ export default function ChatbotPage() {
   const handleFileUpload = () => {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
-    fileInput.accept = ".pdf,.jpg,.jpeg,.png,.gif,.bmp,.tiff";
+    fileInput.accept = ".jpg,.jpeg,.png,.gif,";
     fileInput.onchange = async (e: Event) => {
       const target = e.target as HTMLInputElement;
       if (target.files && target.files[0]) {
@@ -241,11 +241,15 @@ export default function ChatbotPage() {
         reader.onload = async (event) => {
           if (event.target?.result) {
             const base64Data = event.target.result.toString().split(",")[1];
-            setFileData({
+            const fileData = {
               fileName: file.name,
               fileData: base64Data,
               fileType: file.type,
-            });
+            };
+            
+            // Store file data in Redux
+            store.dispatch(updateProjectData({ fileData }));
+            setFileData(fileData);
           }
         };
         reader.readAsDataURL(file);
@@ -257,14 +261,6 @@ export default function ChatbotPage() {
   const getFileIcon = (fileName: string) => {
     const extension = fileName.split(".").pop()?.toLowerCase();
     switch (extension) {
-      case "pdf":
-        return (
-          <Image
-            src={FilePdf}
-            alt="pdf"
-            className="w-10 h-5 text-[#FF5722] hover:text-[#FF7043]"
-          />
-        );
       case "jpg":
         return (
           <Image
@@ -294,22 +290,6 @@ export default function ChatbotPage() {
           <Image
             src={ImageIcon}
             alt="gif"
-            className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]"
-          />
-        );
-      case "bmp":
-        return (
-          <Image
-            src={ImageIcon}
-            alt="bmp"
-            className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]"
-          />
-        );
-      case "tiff":
-        return (
-          <Image
-            src={ImageIcon}
-            alt="tiff"
             className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]"
           />
         );
@@ -469,13 +449,13 @@ export default function ChatbotPage() {
               className="w-full pl-10 pr-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5722] placeholder-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isConversationComplete}
             />
-            {/* <button 
+             <button 
               type="button"
               className="absolute left-3 top-1/2 transform -translate-y-1/2"
               onClick={handleFileUpload}
             >
               <Paperclip className="w-5 h-5 text-[#FF5722] hover:text-[#FF7043]" />
-            </button> */}
+            </button> 
           </div>
           <button
             type="submit"
