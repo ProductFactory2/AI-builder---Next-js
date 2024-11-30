@@ -26,6 +26,9 @@ export default function Preview() {
             setTemplateSelected(true);
             setSelectedTemplate(data.selectedTemplate);
           }
+          else{
+            setTemplateSelected(false);
+          }
         })
         .catch((error) => {
           console.error(error);
