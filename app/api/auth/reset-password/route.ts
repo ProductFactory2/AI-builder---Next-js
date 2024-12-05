@@ -3,35 +3,34 @@ import connectDB from '@/lib/mongodb'
 import User from '@/models/User'
 import { validatePassword } from '@/lib/passwordValidation'
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    await connectDB()
-    const { token, newPassword } = await request.json()
+    const { token, password } = await req.json()
 
-    // Validate password strength
-    const validation = validatePassword(newPassword)
+    // Validate password
+    const validation = validatePassword(password)
     if (!validation.isValid) {
-      return NextResponse.json(
-        { error: validation.errors[0] },
-        { status: 400 }
-      )
+      return NextResponse.json({ 
+        error: 'Password does not meet requirements' 
+      }, { status: 400 })
     }
 
-    // Find user with valid reset token
+    await connectDB()
+
+    // Find user with valid reset token and token not expired
     const user = await User.findOne({
       resetPasswordToken: token,
       resetPasswordExpires: { $gt: Date.now() }
     })
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid or expired reset token' },
-        { status: 400 }
-      )
+      return NextResponse.json({ 
+        error: 'Invalid or expired reset token' 
+      }, { status: 400 })
     }
 
-    // Update password (will be hashed by the pre-save middleware)
-    user.password = newPassword
+    // Update password and clear reset token
+    user.password = password
     user.resetPasswordToken = undefined
     user.resetPasswordExpires = undefined
     await user.save()
@@ -39,11 +38,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ 
       message: 'Password reset successful' 
     })
+
   } catch (error) {
     console.error('Reset password error:', error)
-    return NextResponse.json(
-      { error: 'Failed to reset password' },
-      { status: 500 }
-    )
+    return NextResponse.json({ 
+      error: 'Failed to reset password' 
+    }, { status: 500 })
   }
 }

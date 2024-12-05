@@ -95,19 +95,18 @@ userSchema.pre('save', async function(next) {
 // Method to compare password
 userSchema.methods.comparePassword = async function(candidatePassword: string) {
   try {
-    if (!this.authProvider.includes('local')) {
-      console.log('Auth Provider Mismatch:', {
-        expected: 'local',
-        found: this.authProvider
-      });
+    // Make sure we have the password field
+    if (!this.password) {
+      console.error('Password field missing during comparison');
       return false;
     }
 
     const isMatch = await bcrypt.compare(candidatePassword, this.password);
     
-    console.log('Password Verification Result:', {
+    console.log('Password Comparison Result:', {
       isMatch,
-      authProviders: this.authProvider,
+      email: this.email,
+      authProvider: this.authProvider,
       hasPassword: !!this.password,
       timestamp: new Date().toISOString()
     });
@@ -123,7 +122,7 @@ userSchema.methods.comparePassword = async function(candidatePassword: string) {
 };
 
 // Method to add auth provider
-userSchema.methods.updateAuthProvider = async function(provider: 'local' | 'google') {
+userSchema.methods.updateAuthProvider = async function(provider: 'local' | 'google' | 'local and google') {
   try {
     let newAuthProvider = this.authProvider;
 
@@ -243,6 +242,45 @@ userSchema.methods.getLoginMethods = function() {
     local: this.authProvider.includes('local'),
     google: this.authProvider.includes('google'),
   };
+};
+
+// Method to setup password for Google users
+userSchema.methods.setupLocalPassword = async function(password: string) {
+  try {
+    // Generate salt and hash password directly
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(password, salt);
+    
+    // Update auth provider to include local
+    if (this.authProvider === 'google') {
+      this.authProvider = 'local and google';
+    } else {
+      this.authProvider = 'local';
+    }
+
+    await this.save();
+
+    // Double-check the password can be verified
+    const verifyPassword = await bcrypt.compare(password, this.password);
+    if (!verifyPassword) {
+      throw new Error('Password verification failed after setup');
+    }
+
+    console.log('Local Password Setup Success:', {
+      'Email': this.email,
+      'Auth Provider': this.authProvider,
+      'Password Verified': verifyPassword,
+      'Time': new Date().toISOString()
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Local Password Setup Error:', {
+      'Error': error instanceof Error ? error.message : 'Unknown error',
+      'Time': new Date().toISOString()
+    });
+    return false;
+  }
 };
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);

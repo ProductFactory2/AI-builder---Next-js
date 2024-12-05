@@ -72,7 +72,7 @@ export default function ProfilePage() {
   }, [session])
 
   useEffect(() => {
-    if (profile?.authProvider === 'google' && !profile?.password) {
+    if (profile?.authProvider === 'google') {
       setShowMainProfile(false)
       setShowPasswordSetupModal(true)
     }
@@ -140,17 +140,17 @@ export default function ProfilePage() {
   }
 
   const handlePasswordSetup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setPasswordError("")
+    e.preventDefault();
+    setPasswordError("");
 
     if (!passwordValidation.isValid) {
-      setPasswordError("Please meet all password requirements")
-      return
+      setPasswordError("Please meet all password requirements");
+      return;
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordError("Passwords don't match")
-      return
+      setPasswordError("Passwords don't match");
+      return;
     }
 
     try {
@@ -158,27 +158,32 @@ export default function ProfilePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: newPassword })
-      })
+      });
 
-      if (!response.ok) throw new Error('Failed to set password')
+      const data = await response.json();
 
-      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to set password');
+      }
+
+      // Update local state
       setProfile(prev => ({
         ...prev!,
         password: '••••••••',
-        authProvider: 'local and google'
-      }))
-      setShowPasswordSetupModal(false)
-      setShowMainProfile(true)
+        authProvider: data.authProvider // Use the returned authProvider
+      }));
       
-      // Refresh profile data to get updated auth status
-      const profileResponse = await fetch('/api/user/profile')
-      const profileData = await profileResponse.json()
-      setProfile(profileData)
+      setShowPasswordSetupModal(false);
+      setShowMainProfile(true);
+      
+      // Refresh profile data
+      const profileResponse = await fetch('/api/user/profile');
+      const profileData = await profileResponse.json();
+      setProfile(profileData);
     } catch (error) {
-      setPasswordError('Failed to set password')
+      setPasswordError(error instanceof Error ? error.message : 'Failed to set password');
     }
-  }
+  };
 
   return (
     <div className="container mx-auto p-8  ">

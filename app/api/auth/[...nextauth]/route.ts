@@ -1,13 +1,12 @@
-
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import connectDB from '@/lib/mongodb'
 import User from '@/models/User'
-import bcrypt from 'bcrypt'
-import { authOptions } from './auth'
+import bcrypt from 'bcryptjs'
+import { AuthOptions } from 'next-auth'
 
-const handler = NextAuth({
+export const authOptions: AuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -21,48 +20,39 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         try {
-          if (!credentials?.email || !credentials?.password) {
-            throw new Error('Please provide both email and password');
-          }
-
           await connectDB();
-          const user = await User.findOne({ email: credentials.email }).select('+password');
-
-          // Log user search results
-          console.log('\n🔍 Manual Login Attempt:', {
-            email: credentials.email,
-            userFound: !!user,
-            authProvider: user?.authProvider
-          });
-
+          
+          const user = await User.findOne({ email: credentials?.email }).select('+password');
+          
           if (!user) {
-            throw new Error('User not found');
+            throw new Error('No user found');
           }
 
           if (!user.authProvider.includes('local')) {
-            throw new Error('Please use Google login for this account');
+            throw new Error('Please use Google to sign in');
           }
 
-          // Verify password
-          const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
-
-          console.log('\n✅ Password Verification:', {
-            isValid: isPasswordValid,
+          const isValid = await bcrypt.compare(credentials?.password || '', user.password);
+          
+          console.log('Password Check:', {
+            hasPassword: !!user.password,
+            isValid,
             authProvider: user.authProvider
           });
 
-          if (!isPasswordValid) {
+          if (!isValid) {
             throw new Error('Invalid password');
           }
 
           return {
             id: user._id.toString(),
             email: user.email,
+            name: user.name,
             authProvider: user.authProvider
           };
         } catch (error) {
-          console.error('\n❌ Manual Login Error:', error);
-          throw error;
+          console.error('Auth Error:', error);
+          return null;
         }
       }
     })
@@ -72,95 +62,41 @@ const handler = NextAuth({
       if (account?.provider === 'google') {
         try {
           await connectDB();
-          let dbUser = await User.findOne({ email: user.email });
+          const dbUser = await User.findOne({ email: user.email });
           
-          console.log('\n🔍 Google Sign In Attempt:', {
-            email: user.email,
-            existingUser: !!dbUser,
-            currentAuthProvider: dbUser?.authProvider
-          });
-
-          if (dbUser) {
-            // Update Google ID and auth provider if needed
-            let needsUpdate = false;
-            let updates: any = {};
-
-            // Check if Google ID needs updating
-            if (!dbUser.googleId || dbUser.googleId !== user.id) {
-              updates.googleId = user.id;
-              needsUpdate = true;
-            }
-
-            // Check if auth provider needs updating
-            if (!dbUser.authProvider.includes('google')) {
-              updates.authProvider = dbUser.authProvider === 'local' 
-                ? 'local and google' 
-                : 'google';
-              needsUpdate = true;
-            }
-
-            // Apply updates if needed
-            if (needsUpdate) {
-              dbUser = await User.findByIdAndUpdate(
-                dbUser._id,
-                updates,
-                { new: true }
-              );
-
-              console.log('\n✅ Updated User:', {
-                email: dbUser.email,
-                newAuthProvider: dbUser.authProvider,
-                googleId: dbUser.googleId
-              });
-            }
-
-            return true;
-          } else {
-            // Create new Google-only user
+          if (!dbUser) {
             await User.create({
               email: user.email,
               googleId: user.id,
               authProvider: 'google',
-              isVerified: true
+              isVerified: true,
+              name: user.name
             });
-
-            console.log('\n�� Created New Google User:', user.email);
-            return true;
           }
+          return true;
         } catch (error) {
-          console.error('\n❌ Google Sign In Error:', error);
+          console.error('Sign In Error:', error);
           return false;
         }
       }
-
-      // Check if user has completed onboarding
-      const dbUser = await User.findOne({ email: user.email });
-      if (dbUser?.isVerified && !dbUser.onboardingCompleted) {
-        return true;
-      }
-
       return true;
     },
-
     async session({ session, token }) {
       if (session.user) {
-        const dbUser = await User.findOne({ email: session.user.email })
-        if (dbUser) {
-          session.user.id = dbUser._id.toString()
-          session.user.onboardingStatus = dbUser.onboardingStatus
-          session.user.authProvider = dbUser.authProvider
-          if (dbUser.authProvider === 'google' && token.name) {
-            session.user.name = token.name;
-          }
+        const user = await User.findOne({ email: session.user.email });
+        if (user) {
+          session.user.id = user._id.toString();
+          session.user.authProvider = user.authProvider;
         }
       }
-      return session
+      return session;
     }
   },
   pages: {
     signIn: '/login',
     error: '/error',
   }
-});
+}
 
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST }
